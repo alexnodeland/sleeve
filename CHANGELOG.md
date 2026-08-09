@@ -5,7 +5,7 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.1.1] - 2026-08-08
 
 ### Added
 
@@ -14,6 +14,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   falls back to `~/.local/bin` rather than silently escalating to `sudo`.
 - Illustrated README: hero, pipeline diagram, and a diagram of how cover art is
   squared.
+
+### Changed
+
+- `just smoke` now takes the URL as an argument or from `SLEEVE_SMOKE_URL`,
+  instead of carrying a committed default. A default would aim every
+  contributor's downloader at a third party's video, and would eventually rot
+  into a failure that looks like a bug in sleeve.
 
 ### Fixed
 
@@ -47,4 +54,5 @@ First release.
 - Startup check for yt-dlp and ffmpeg that reports every missing tool at once,
   before anything is downloaded.
 
+[0.1.1]: https://github.com/alexnodeland/sleeve/releases/tag/v0.1.1
 [0.1.0]: https://github.com/alexnodeland/sleeve/releases/tag/v0.1.0

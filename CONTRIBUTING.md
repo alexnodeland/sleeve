@@ -51,13 +51,23 @@ obvious; the comment above it says what went wrong.
 
 ### Testing against a real video
 
-`just smoke` runs `--list` and `--dry-run` against a real URL. It is not part
-of `just ci` because it needs the network and both external tools.
+`just smoke` runs `--list` and `--dry-run` against a real chapter-marked video.
+It is not part of `just ci`, because it needs the network and both external
+tools.
 
 ```sh
-just smoke                          # the default URL
-just smoke URL=https://youtu.be/x   # your own
+just smoke https://...                    # one-off
+SLEEVE_SMOKE_URL=https://... just smoke   # or set it once in your shell
 ```
+
+**No URL is committed.** A default would aim every contributor's downloader at
+some third party's video, and any link would eventually rot into a failure that
+looks like a bug in sleeve. There is also no stable, openly-licensed,
+chapter-marked video to point at — the obvious candidates (Blender's CC-BY open
+movies, public-domain archive.org items) have no chapter markers, which is the
+one thing this test needs. Use something you have the right to download.
+
+Nothing in `just ci` needs a URL; the whole suite is hermetic.
 
 ## Ground rules
 

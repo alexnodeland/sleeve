@@ -71,14 +71,34 @@ msrv:
     RUSTC="$(rustup run {{MSRV}} rustc --print sysroot)/bin/rustc" \
       rustup run {{MSRV}} cargo check --all-targets
 
-# Run against a real video, writing to ./scratch (gitignored).
+# Run against a real chapter-marked video, writing to ./scratch (gitignored).
 #
-# NOT part of `just ci` — it needs the network and the two external tools.
-# The URL is any chapter-marked video; override with `just smoke URL=...`.
-URL := "https://youtu.be/CHANGE_ME"
-smoke:
-    cargo run -- --list "{{URL}}"
-    cargo run -- --dry-run --dest ./scratch "{{URL}}"
+#   just smoke https://...        # one-off
+#   SLEEVE_SMOKE_URL=https://...  # or set it once in your shell
+#
+# NOT part of `just ci` — it needs the network and both external tools.
+#
+# No URL is committed here, deliberately. A default would aim every
+# contributor's downloader at some third party's video, and any link would
+# eventually rot into a failure that looks like a bug in sleeve. There is also
+# no stable, openly-licensed, chapter-marked video to point at: the obvious
+# candidates (Blender's CC-BY open movies, public-domain archive.org items)
+# carry no chapter markers, which is the one thing this test needs.
+smoke url=env_var_or_default("SLEEVE_SMOKE_URL", ""):
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if [ -z "{{url}}" ]; then
+      echo "just smoke needs the URL of a chapter-marked video." >&2
+      echo >&2
+      echo "  just smoke https://..." >&2
+      echo "  SLEEVE_SMOKE_URL=https://... just smoke" >&2
+      echo >&2
+      echo "None is committed on purpose — point it at something you have the" >&2
+      echo "right to download. The CI suite is hermetic and needs no URL." >&2
+      exit 2
+    fi
+    cargo run -- --list "{{url}}"
+    cargo run -- --dry-run --dest ./scratch "{{url}}"
 
 # Everything CI runs, in CI order
 ci: fmt-check clippy test deny doc msrv
