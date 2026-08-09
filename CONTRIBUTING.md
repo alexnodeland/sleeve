@@ -91,5 +91,9 @@ Nothing in `just ci` needs a URL; the whole suite is hermetic.
 The release workflow verifies that the tag, `Cargo.toml`, and the leading
 `CHANGELOG.md` section all agree — a mismatch fails the build rather than
 shipping the previous version's notes. It then builds a macOS universal binary
-and a Linux x86_64 binary and opens a **draft** release. Review it, then
-publish.
+and a Linux x86_64 binary and **publishes** the release.
+
+There is no draft step: pushing the tag is the decision. Those three guards are
+the safety net, and they run before anything is built. Get the version wrong and
+the build fails; get it right and `releases/latest/download` — the URL the curl
+installer resolves — points at the new version immediately.

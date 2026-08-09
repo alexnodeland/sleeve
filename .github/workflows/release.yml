@@ -1,7 +1,14 @@
-# Release: pushing a `vX.Y.Z` tag builds binaries and drafts a GitHub release.
+# Release: pushing a `vX.Y.Z` tag builds binaries and publishes a GitHub
+# release. The tag is the decision — there is no second confirmation step.
 #
-# The release is a DRAFT on purpose — nothing is public until a human reviews
-# the notes and clicks Publish.
+# This deliberately does NOT draft-and-wait. A draft gate is worth it when
+# publishing pushes something at users, as with a signed app behind an
+# auto-updater. Here, publishing only makes a tarball downloadable, so the gate
+# protected nothing while leaving `releases/latest/download` — the URL the curl
+# installer resolves — pointing at the previous version until someone
+# remembered to click Publish. The guards below are the real safety net: the
+# tag, Cargo.toml, and the leading CHANGELOG section must all agree before
+# anything is built.
 #
 # macOS ships as a **universal** binary (arm64 + x86_64 lipo'd together) built
 # on one Apple-silicon runner, which avoids the scarce Intel runner queue
@@ -114,7 +121,7 @@ jobs:
           if-no-files-found: error
 
   release:
-    name: draft the release
+    name: publish the release
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -142,7 +149,7 @@ jobs:
 
       - uses: softprops/action-gh-release@v2
         with:
-          draft: true
+          draft: false
           prerelease: false
           name: sleeve ${{ github.ref_name }}
           body_path: NOTES.md
