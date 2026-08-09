@@ -1,0 +1,34 @@
+# Supply-chain gate. `just deny` / the `deny` CI job.
+
+[advisories]
+version = 2
+# Unmaintained crates are a warning, not a failure: they are a reason to plan a
+# migration, not a reason to break today's build.
+unmaintained = "workspace"
+yanked = "deny"
+
+[licenses]
+version = 2
+# Permissive only. Anything copyleft entering the tree is a licensing decision,
+# so it should fail here and be made deliberately rather than absorbed.
+allow = [
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "MIT",
+    "MPL-2.0",
+    "Unicode-3.0",
+    "Zlib",
+]
+confidence-threshold = 0.9
+
+[bans]
+multiple-versions = "warn"
+wildcards = "deny"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]

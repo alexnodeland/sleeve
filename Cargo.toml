@@ -1,0 +1,44 @@
+# sleeve — a single binary crate with a library target.
+#
+# The library target is not for downstream consumers (nothing depends on
+# `sleeve` as a crate); it exists so the pipeline can be unit-tested without
+# spawning yt-dlp or ffmpeg. Every module that builds an external command
+# exposes a pure `*_args()` function returning the argv, and the tests assert
+# on that vector. A binary-only crate would force the whole suite through
+# `assert_cmd` and a real network, which is the opposite of hermetic.
+
+[package]
+name = "sleeve"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/alexnodeland/sleeve"
+authors = ["Alex Nodeland <nodeland.alex@gmail.com>"]
+description = "Split a chapter-marked YouTube video into tagged audio tracks with cover art"
+keywords = ["youtube", "audio", "ffmpeg", "yt-dlp", "music"]
+categories = ["command-line-utilities", "multimedia::audio"]
+readme = "README.md"
+exclude = ["/.github", "/docs", "justfile", "lefthook.yml", "deny.toml"]
+
+[dependencies]
+anyhow = "1"
+# `env` so every flag can also come from SLEEVE_* — the config file and the
+# environment are the two ways to avoid retyping --dest on every invocation.
+clap = { version = "4", features = ["derive", "env"] }
+directories = "6"
+serde = { version = "1", features = ["derive"] }
+# Errors are all anyhow: this is a CLI, so every error ends up as a message to
+# a human rather than something a caller matches on. No thiserror types.
+serde_json = "1"
+# Intermediates (the source download, the thumbnail) live in a temp dir that is
+# removed on drop, so a failed run does not strand a 500 MB file.
+tempfile = "3"
+toml = "0.9"
+
+[profile.release]
+# A CLI that shells out to ffmpeg spends ~0% of its wall clock in our code, so
+# this is purely about shipping a small binary, not a fast one.
+lto = true
+strip = true
+codegen-units = 1

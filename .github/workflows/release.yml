@@ -1,0 +1,152 @@
+# Release: pushing a `vX.Y.Z` tag builds binaries and drafts a GitHub release.
+#
+# The release is a DRAFT on purpose — nothing is public until a human reviews
+# the notes and clicks Publish.
+#
+# macOS ships as a **universal** binary (arm64 + x86_64 lipo'd together) built
+# on one Apple-silicon runner, which avoids the scarce Intel runner queue
+# entirely and gives users one download that works on either Mac.
+
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write # create the release + upload assets
+
+env:
+  CARGO_TERM_COLOR: always
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: verify the tag
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cargo.toml version must match the tag
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          want="${TAG#v}"
+          got="$(grep -m1 '^version' Cargo.toml | sed -E 's/.*"(.*)".*/\1/')"
+          if [ "$got" != "$want" ]; then
+            echo "::error::Cargo.toml is $got but the tag is v$want"
+            exit 1
+          fi
+          echo "version matches: $want"
+      - name: CHANGELOG must lead with this version
+        # Release notes are cut from the FIRST `## ` section. Tagging before
+        # that section exists would ship the previous version's notes, so fail
+        # loudly instead.
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          want="${TAG#v}"
+          got="$(grep -m1 -oE '^## \[[0-9]+\.[0-9]+\.[0-9]+\]' CHANGELOG.md | sed -E 's/[^0-9.]//g' || true)"
+          if [ "$got" != "$want" ]; then
+            echo "::error::CHANGELOG.md leads with [$got] but the tag is v$want"
+            exit 1
+          fi
+          echo "CHANGELOG leads with [$want]"
+
+  build:
+    name: build ${{ matrix.name }}
+    needs: verify
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macos-universal
+            os: macos-14
+            universal: true
+          - name: linux-x86_64
+            os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            universal: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.universal && 'x86_64-apple-darwin,aarch64-apple-darwin' || matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build (macOS universal)
+        if: matrix.universal
+        run: |
+          set -euo pipefail
+          cargo build --release --target x86_64-apple-darwin
+          cargo build --release --target aarch64-apple-darwin
+          mkdir -p dist
+          lipo -create -output dist/sleeve \
+            target/x86_64-apple-darwin/release/sleeve \
+            target/aarch64-apple-darwin/release/sleeve
+          lipo -info dist/sleeve
+
+      - name: Build (Linux)
+        if: ${{ !matrix.universal }}
+        run: |
+          set -euo pipefail
+          cargo build --release --target ${{ matrix.target }}
+          mkdir -p dist
+          cp target/${{ matrix.target }}/release/sleeve dist/sleeve
+
+      - name: Package
+        run: |
+          set -euo pipefail
+          cd dist
+          tar -czf "sleeve-${{ matrix.name }}.tar.gz" sleeve
+          shasum -a 256 "sleeve-${{ matrix.name }}.tar.gz" > "sleeve-${{ matrix.name }}.tar.gz.sha256"
+          rm sleeve
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}
+          path: dist/
+          if-no-files-found: error
+
+  release:
+    name: draft the release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Assemble release notes
+        run: |
+          set -euo pipefail
+          {
+            echo "\`\`\`sh"
+            echo "brew install yt-dlp ffmpeg   # sleeve needs both at runtime"
+            echo "\`\`\`"
+            echo
+            echo "Unsigned binaries. On first run macOS Gatekeeper will block them —"
+            echo "clear quarantine with \`xattr -d com.apple.quarantine ./sleeve\`."
+            echo
+            # This version's section: everything between the first and second `## `.
+            awk '/^## /{c++} c==1{print} c==2{exit}' CHANGELOG.md || true
+          } > NOTES.md
+          cat NOTES.md
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          prerelease: false
+          name: sleeve ${{ github.ref_name }}
+          body_path: NOTES.md
+          fail_on_unmatched_files: true
+          files: |
+            dist/*.tar.gz
+            dist/*.sha256

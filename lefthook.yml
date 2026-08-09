@@ -1,0 +1,48 @@
+# Lefthook git hooks.
+# https://github.com/evilmartians/lefthook
+#
+# Fast gates on commit, the suite on push, Conventional Commits on the message.
+# The whole crate is small enough that staged-only scoping would save less time
+# than it would cost in drift.
+
+pre-commit:
+  parallel: true
+  commands:
+    fmt:
+      glob: "*.rs"
+      run: cargo fmt --all -- --check
+      skip:
+        - merge
+        - rebase
+
+    clippy:
+      glob: "*.{rs,toml}"
+      run: cargo clippy --all-targets -- -D warnings
+      skip:
+        - merge
+        - rebase
+
+pre-push:
+  commands:
+    test:
+      run: cargo test
+      skip:
+        - merge
+        - rebase
+
+commit-msg:
+  commands:
+    conventional:
+      run: |
+        message=$(cat {1})
+        if ! echo "$message" | grep -qE "^(feat|fix|docs|style|refactor|perf|test|chore|ci|build|revert)(\(.+\))?: .{1,100}"; then
+          echo "Commit message must follow Conventional Commits format:"
+          echo "  type(scope): description"
+          echo ""
+          echo "Types: feat, fix, docs, style, refactor, perf, test, chore, ci, build, revert"
+          echo ""
+          echo "Examples:"
+          echo "  feat(cover): detect pillarboxed thumbnails before squaring"
+          echo "  fix(encode): stop tracks inheriting the source chapter list"
+          exit 1
+        fi
