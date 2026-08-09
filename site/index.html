@@ -537,6 +537,10 @@ footer a { color: var(--text-2); text-decoration: none; }
 footer a:hover { color: var(--text); }
 footer .spacer { flex: 1; }
 footer .mono { font-family: var(--mono); font-size: 12.5px; }
+/* The licence and the copyright are one cluster, so they wrap together
+   rather than the copyright stranding itself on its own line. */
+footer .copyright { white-space: nowrap; }
+footer .copyright a { text-decoration: underline; text-underline-offset: 2px; }
 
 /* ================================================ motion off */
 
@@ -981,6 +985,7 @@ footer .mono { font-family: var(--mono); font-size: 12.5px; }
     <a href="https://github.com/alexnodeland/sleeve/blob/main/CONTRIBUTING.md">Contributing</a>
     <span class="spacer"></span>
     <span class="mono">MIT or Apache-2.0</span>
+    <span class="mono copyright">&copy; 2026 <a href="https://alexnodeland.com">Alex Nodeland</a></span>
   </div>
 </footer>
 
