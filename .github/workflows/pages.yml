@@ -39,17 +39,31 @@ jobs:
 
       - name: Guard against external requests
         # The page must stay self-contained: no CDN scripts, no remote fonts, no
-        # tracking. A stray absolute URL in src/href is the way that regresses,
-        # so fail the deploy rather than ship it.
+        # tracking pixels. This checks the things that actually *fetch* — src
+        # attributes, CSS url()/@import, and <link> rels that load.
+        #
+        # Deliberately NOT every absolute URL. Anchors to GitHub and a
+        # rel="canonical" are navigation and metadata; they cost the visitor no
+        # request. An earlier version of this grepped all href= and failed the
+        # build on its own canonical link.
         run: |
-          set -euo pipefail
-          if grep -nEo '(src|href)="https?://[^"]+"' site/index.html \
-             | grep -v 'href="https://github.com' \
-             | grep -v 'href="https://raw.githubusercontent.com'; then
-            echo "::error::site/index.html loads something from an external host"
+          set -uo pipefail
+          fail=0
+          check() { # description, pattern
+            if grep -nEi "$2" site/index.html; then
+              echo "::error::$1"
+              fail=1
+            fi
+          }
+          check "external src= (script, image, iframe or media)" 'src="https?://'
+          check "external url() in CSS"                          'url\((["'"'"'])?https?://'
+          check "@import in CSS"                                 '@import'
+          check "external <link> that fetches"                   '<link[^>]+rel="(stylesheet|preload|prefetch|preconnect|dns-prefetch|modulepreload)"[^>]*href="https?://'
+          if [ "$fail" -ne 0 ]; then
+            echo "site/index.html would load something from another host"
             exit 1
           fi
-          echo "no external resource loads"
+          echo "self-contained: nothing is fetched from another host"
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
