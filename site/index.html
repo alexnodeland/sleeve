@@ -88,6 +88,10 @@
 html { scroll-behavior: smooth; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 
+/* No page-level horizontal overflow, ever. `clip` rather than `hidden`
+   so no scroll container is created and the sticky topbar keeps working. */
+html, body { overflow-x: clip; }
+
 body {
   margin: 0;
   background: var(--ground);
@@ -211,6 +215,8 @@ h3 {
   padding: 2px 9px;
 }
 @media (max-width: 620px) { .topbar nav .hide-sm { display: none; } }
+@media (max-width: 420px) { .topbar nav { gap: 16px; } }
+@media (max-width: 359px) { .ver { display: none; } }
 
 /* ================================================ hero */
 
@@ -253,6 +259,14 @@ h3 {
   color: var(--text-3);
 }
 .transform-head .grow { flex: 1; }
+/* The filename is one unbroken token; on narrow screens it truncates
+   rather than shoving the duration out of the panel. */
+.transform-head span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
 /* the bar: one file, then chapters */
 .bar {
@@ -354,19 +368,26 @@ h3 {
 
 .cmd {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 12px;
   background: var(--surface-2);
   border: 1px solid var(--edge);
   border-radius: var(--radius);
   padding: 12px 12px 12px 16px;
   font-family: var(--mono);
-  font-size: 13.5px;
-  overflow-x: auto;
+  font-size: 13px;
   flex: 1;
   min-width: min(100%, 420px);
 }
-.cmd code { white-space: nowrap; }
+/* The command wraps instead of scrolling: a soft wrap copies as one line,
+   and nothing ever pushes past the right edge. */
+.cmd code {
+  flex: 1;
+  min-width: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.55;
+}
 .cmd .prompt { color: var(--t1); user-select: none; }
 
 .copy {
@@ -412,7 +433,8 @@ h3 {
 .grid {
   display: grid;
   gap: 16px;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  /* min(100%, …) so the track minimum can never exceed the container. */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
 }
 
 .card {
@@ -423,9 +445,16 @@ h3 {
 }
 .card p { margin: 0; color: var(--text-2); font-size: 14.5px; }
 .card .ico { display: block; margin-bottom: 14px; }
+.card .cmdline {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--text);
+  margin-top: 8px;
+  overflow-wrap: anywhere;
+}
 
 /* three claims, each with a failure it prevents */
-.claims { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+.claims { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); }
 .claim {
   border: 1px solid var(--edge);
   border-radius: var(--radius);
@@ -456,6 +485,15 @@ h3 {
 
 figure { margin: 0; }
 figure svg { display: block; width: 100%; height: auto; }
+
+/* Each diagram exists twice: a wide left-to-right telling and a stacked
+   top-to-bottom one. Small screens get the stacked one at full legibility —
+   nothing is scaled down to squint size, and nothing scrolls sideways. */
+figure .fig-mobile { display: none; max-width: 340px; margin-inline: auto; }
+@media (max-width: 640px) {
+  figure .fig-desktop { display: none; }
+  figure .fig-mobile { display: block; }
+}
 figcaption {
   font-family: var(--mono);
   font-size: 12.5px;
@@ -493,6 +531,41 @@ tbody td:first-child { font-family: var(--mono); color: var(--text); white-space
 .yes { color: var(--t1); }
 .no  { color: var(--text-3); }
 
+/* Below the width where five columns fit, the grid becomes one card per
+   format, each cell labelled inline. No sideways scrolling. */
+@media (max-width: 680px) {
+  .tbl-wrap { overflow: visible; border: none; border-radius: 0; }
+  table, tbody, tr, td { display: block; }
+  table { min-width: 0; }
+  thead { display: none; }
+  tbody tr {
+    background: var(--surface);
+    border: 1px solid var(--edge);
+    border-radius: var(--radius);
+    padding: 8px 0 12px;
+  }
+  tbody tr + tr { margin-top: 12px; }
+  tbody td {
+    display: flex;
+    gap: 14px;
+    align-items: baseline;
+    padding: 5px 18px;
+    border-bottom: none;
+  }
+  tbody td:first-child { font-size: 15.5px; padding: 10px 18px 6px; }
+  tbody td::before {
+    content: attr(data-label);
+    flex: none;
+    width: 96px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+  tbody td:first-child::before { content: none; }
+}
+
 /* ================================================ steps / install */
 
 .steps { display: grid; gap: 14px; }
@@ -515,11 +588,15 @@ tbody td:first-child { font-family: var(--mono); color: var(--text); white-space
   padding: 3px 8px;
   white-space: nowrap;
 }
+/* The 1fr column must be allowed to shrink below its content's intrinsic
+   width, or a long command widens the whole page. */
+.step > div { min-width: 0; }
 .step pre {
   margin: 0;
   font-family: var(--mono);
   font-size: 13px;
-  overflow-x: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
   color: var(--text);
 }
 .step .hint { margin: 8px 0 0; font-size: 13.5px; color: var(--text-2); }
@@ -532,15 +609,57 @@ footer {
   color: var(--text-3);
   font-size: 13.5px;
 }
-footer .wrap { display: flex; flex-wrap: wrap; gap: 18px 28px; align-items: center; }
+footer .wrap { display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: center; }
 footer a { color: var(--text-2); text-decoration: none; }
 footer a:hover { color: var(--text); }
 footer .spacer { flex: 1; }
 footer .mono { font-family: var(--mono); font-size: 12.5px; }
-/* The licence and the copyright are one cluster, so they wrap together
-   rather than the copyright stranding itself on its own line. */
-footer .copyright { white-space: nowrap; }
+/* Two clusters, each locked to a single row: the links, and the
+   licence + copyright. On wide screens they share one row; when the room
+   runs out the meta cluster drops below as a whole — no item ever
+   straggles onto its own line. */
+footer .links, footer .meta {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  white-space: nowrap;
+}
 footer .copyright a { text-decoration: underline; text-underline-offset: 2px; }
+@media (max-width: 640px) {
+  footer { font-size: 12.5px; }
+  footer .links { gap: 13px; }
+  footer .meta { gap: 14px; }
+  footer .mono { font-size: 12px; }
+  /* Stacked rows read best flush left; the spacer only serves the
+     single-row desktop layout. */
+  footer .spacer { display: none; }
+}
+@media (max-width: 374px) {
+  /* The brand already lives in the topbar; on the narrowest screens the
+     wordmark yields so the four links hold one row. */
+  footer .links .mono { display: none; }
+  footer { font-size: 12px; }
+}
+
+/* ================================================ small screens */
+
+@media (max-width: 640px) {
+  /* The faded-out "before" label still holds its width, which squeezes the
+     two "after" labels into ragged wraps. There is no room for all three,
+     so the transient one goes. */
+  .bar-legend .before { display: none; }
+  .bar-legend span { white-space: nowrap; }
+
+  .cmd { font-size: 12px; }
+  .step pre { font-size: 12px; }
+  .card .cmdline { font-size: 12px; }
+
+  .tracks { font-size: 12px; }
+  .tracks li { gap: 9px; }
+  .tracks .leader { min-width: 10px; }
+
+  .panel { padding: 18px; }
+}
 
 /* ================================================ motion off */
 
@@ -656,7 +775,7 @@ footer .copyright a { text-decoration: underline; text-underline-offset: 2px; }
     </p>
 
     <figure class="panel">
-      <svg viewBox="0 0 1000 250" role="img" aria-label="Four steps: read the chapter markers, download the audio once, square the cover art, then cut and tag each track.">
+      <svg class="fig-desktop" viewBox="0 0 1000 250" role="img" aria-label="Four steps: read the chapter markers, download the audio once, square the cover art, then cut and tag each track.">
         <defs>
           <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
             <path d="M0 0 L10 5 L0 10 z" fill="var(--edge-bright)"/>
@@ -728,6 +847,77 @@ footer .copyright a { text-decoration: underline; text-underline-offset: 2px; }
 
         <text x="500" y="228" text-anchor="middle" font-family="var(--mono)" font-size="12.5" fill="var(--text-3)">yt-dlp reads and fetches · ffmpeg cuts, encodes and tags</text>
       </svg>
+
+      <!-- Same four steps, stacked for narrow screens. -->
+      <svg class="fig-mobile" viewBox="0 0 260 805" role="img" aria-label="Four steps: read the chapter markers, download the audio once, square the cover art, then cut and tag each track.">
+        <defs>
+          <marker id="ar-m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--edge-bright)"/>
+          </marker>
+        </defs>
+
+        <!-- 1 -->
+        <g transform="translate(16,-30)">
+          <rect x="6" y="40" width="216" height="150" rx="10" fill="var(--surface-2)" stroke="var(--edge)"/>
+          <g>
+            <rect x="38" y="74" width="152" height="24" rx="4" fill="var(--ground)" stroke="var(--edge)"/>
+            <rect x="40" y="76" width="38" height="20" rx="3" fill="var(--t1)"/>
+            <rect x="80" y="76" width="32" height="20" rx="3" fill="var(--t2)"/>
+            <rect x="114" y="76" width="28" height="20" rx="3" fill="var(--t3)"/>
+            <rect x="144" y="76" width="44" height="20" rx="3" fill="var(--t4)"/>
+          </g>
+          <text x="114" y="134" text-anchor="middle" font-family="var(--sans)" font-size="16" font-weight="650" fill="var(--text)">read the markers</text>
+          <text x="114" y="158" text-anchor="middle" font-family="var(--mono)" font-size="12.5" fill="var(--text-3)">the track listing</text>
+        </g>
+
+        <!-- 2 -->
+        <g transform="translate(-240,165)">
+          <rect x="262" y="40" width="216" height="150" rx="10" fill="var(--surface-2)" stroke="var(--edge)"/>
+          <g stroke="var(--t2)" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M370 68 L370 96"/>
+            <path d="M360 87 L370 97 L380 87"/>
+            <path d="M352 106 L388 106"/>
+          </g>
+          <text x="370" y="134" text-anchor="middle" font-family="var(--sans)" font-size="16" font-weight="650" fill="var(--text)">download once</text>
+          <text x="370" y="158" text-anchor="middle" font-family="var(--mono)" font-size="12.5" fill="var(--text-3)">best audio, untouched</text>
+        </g>
+
+        <!-- 3 -->
+        <g transform="translate(-496,360)">
+          <rect x="518" y="40" width="216" height="150" rx="10" fill="var(--surface-2)" stroke="var(--edge)"/>
+          <rect x="588" y="72" width="76" height="34" rx="4" fill="var(--ground)" stroke="var(--edge)"/>
+          <rect x="597" y="72" width="58" height="34" fill="var(--edge)"/>
+          <rect x="608" y="64" width="36" height="50" rx="4" fill="none" stroke="var(--t2)" stroke-width="2" stroke-dasharray="4 3">
+            <animate attributeName="stroke-dashoffset" values="0;-14" dur="1.5s" repeatCount="indefinite"/>
+          </rect>
+          <text x="626" y="134" text-anchor="middle" font-family="var(--sans)" font-size="16" font-weight="650" fill="var(--text)">square the art</text>
+          <text x="626" y="158" text-anchor="middle" font-family="var(--mono)" font-size="12.5" fill="var(--text-3)">find the bars, then pad</text>
+        </g>
+
+        <!-- 4 -->
+        <g transform="translate(-752,555)">
+          <rect x="774" y="40" width="220" height="150" rx="10" fill="var(--surface-2)" stroke="var(--edge)"/>
+          <g>
+            <rect x="812" y="68" width="40" height="40" rx="5" fill="var(--ground)" stroke="var(--edge)"/>
+            <circle cx="832" cy="88" r="11" fill="none" stroke="var(--t2)" stroke-width="2"/>
+            <circle cx="832" cy="88" r="2.6" fill="var(--t2)"/>
+            <rect x="864" y="70" width="88" height="6" rx="3" fill="var(--edge-bright)"/>
+            <rect x="864" y="84" width="62" height="6" rx="3" fill="var(--edge)"/>
+            <rect x="864" y="98" width="74" height="6" rx="3" fill="var(--edge)"/>
+          </g>
+          <text x="884" y="134" text-anchor="middle" font-family="var(--sans)" font-size="16" font-weight="650" fill="var(--text)">cut, tag, embed</text>
+          <text x="884" y="158" text-anchor="middle" font-family="var(--mono)" font-size="12.5" fill="var(--text-3)">one file per chapter</text>
+        </g>
+
+        <g stroke="var(--edge-bright)" stroke-width="2" marker-end="url(#ar-m)">
+          <path d="M130 166 L130 197"/>
+          <path d="M130 361 L130 392"/>
+          <path d="M130 556 L130 587"/>
+        </g>
+
+        <text x="130" y="775" text-anchor="middle" font-family="var(--mono)" font-size="12.5" fill="var(--text-3)">yt-dlp reads and fetches</text>
+        <text x="130" y="795" text-anchor="middle" font-family="var(--mono)" font-size="12.5" fill="var(--text-3)">ffmpeg cuts, encodes and tags</text>
+      </svg>
     </figure>
 
     <div class="claims" style="margin-top:36px">
@@ -762,7 +952,7 @@ footer .copyright a { text-decoration: underline; text-underline-offset: 2px; }
     </p>
 
     <figure class="panel">
-      <svg viewBox="0 0 1000 260" role="img" aria-label="Three panels: the thumbnail as served with bars, the detected picture inside it, and the final square with padding added.">
+      <svg class="fig-desktop" viewBox="0 0 1000 260" role="img" aria-label="Three panels: the thumbnail as served with bars, the detected picture inside it, and the final square with padding added.">
         <defs>
           <linearGradient id="pic" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0" stop-color="var(--t3)"/>
@@ -810,6 +1000,58 @@ footer .copyright a { text-decoration: underline; text-underline-offset: 2px; }
         <g stroke="var(--edge-bright)" stroke-width="2" marker-end="url(#ar2)">
           <path d="M288 104 L362 104"/>
           <path d="M633 104 L735 104"/>
+        </g>
+      </svg>
+
+      <!-- Same three panels, stacked for narrow screens. -->
+      <svg class="fig-mobile" viewBox="0 0 260 710" role="img" aria-label="Three panels: the thumbnail as served with bars, the detected picture inside it, and the final square with padding added.">
+        <defs>
+          <linearGradient id="pic-m" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="var(--t3)"/>
+            <stop offset="0.5" stop-color="var(--t4)"/>
+            <stop offset="1" stop-color="var(--t1)"/>
+          </linearGradient>
+          <marker id="ar2-m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--edge-bright)"/>
+          </marker>
+        </defs>
+
+        <g transform="translate(-25,-30)">
+          <rect x="40" y="40" width="230" height="129" rx="4" fill="var(--ground)"/>
+          <rect x="69" y="40" width="172" height="129" fill="url(#pic-m)" opacity="0.92"/>
+          <rect x="40" y="40" width="29" height="129" fill="var(--t3)" opacity="0.2"/>
+          <rect x="241" y="40" width="29" height="129" fill="var(--t3)" opacity="0.2"/>
+          <rect x="40.5" y="40.5" width="229" height="128" rx="4" fill="none" stroke="var(--edge)"/>
+          <text x="155" y="200" text-anchor="middle" font-family="var(--sans)" font-size="15" font-weight="650" fill="var(--text)">as served</text>
+          <text x="155" y="222" text-anchor="middle" font-family="var(--mono)" font-size="12" fill="var(--text-3)">bars baked in</text>
+        </g>
+
+        <g transform="translate(-370,205)">
+          <rect x="385" y="40" width="230" height="129" rx="4" fill="var(--ground)"/>
+          <rect x="414" y="40" width="172" height="129" fill="url(#pic-m)" opacity="0.92"/>
+          <rect x="385.5" y="40.5" width="229" height="128" rx="4" fill="none" stroke="var(--edge)"/>
+          <rect x="414" y="40" width="172" height="129" fill="none" stroke="var(--t2)" stroke-width="2.5" stroke-dasharray="6 4">
+            <animate attributeName="stroke-dashoffset" values="0;-20" dur="1.6s" repeatCount="indefinite"/>
+          </rect>
+          <text x="500" y="200" text-anchor="middle" font-family="var(--sans)" font-size="15" font-weight="650" fill="var(--text)">detected</text>
+          <text x="500" y="222" text-anchor="middle" font-family="var(--mono)" font-size="12" fill="var(--text-3)">the real picture</text>
+        </g>
+
+        <g transform="translate(-714,462)">
+          <rect x="758" y="18" width="172" height="172" rx="4" fill="var(--ground)"/>
+          <rect x="758" y="40" width="172" height="129" fill="url(#pic-m)" opacity="0.92"/>
+          <g fill="var(--t1)" opacity="0.22">
+            <rect x="758" y="18" width="172" height="22"/>
+            <rect x="758" y="169" width="172" height="21"/>
+          </g>
+          <rect x="758.5" y="18.5" width="171" height="171" rx="4" fill="none" stroke="var(--edge-bright)"/>
+          <text x="844" y="215" text-anchor="middle" font-family="var(--sans)" font-size="15" font-weight="650" fill="var(--text)">squared</text>
+          <text x="844" y="237" text-anchor="middle" font-family="var(--mono)" font-size="12" fill="var(--text-3)">padded, never cropped</text>
+        </g>
+
+        <g stroke="var(--edge-bright)" stroke-width="2" marker-end="url(#ar2-m)">
+          <path d="M130 205 L130 232"/>
+          <path d="M130 440 L130 467"/>
         </g>
       </svg>
     </figure>
@@ -889,19 +1131,19 @@ footer .copyright a { text-decoration: underline; text-underline-offset: 2px; }
         </thead>
         <tbody>
           <tr>
-            <td>m4a</td><td>AAC 256k</td>
-            <td class="yes">Embedded</td><td class="yes">Yes</td>
-            <td>The default. Apple-native and plays essentially everywhere.</td>
+            <td>m4a</td><td data-label="Codec">AAC 256k</td>
+            <td data-label="Cover art" class="yes">Embedded</td><td data-label="Apple Music" class="yes">Yes</td>
+            <td data-label="Use it when">The default. Apple-native and plays essentially everywhere.</td>
           </tr>
           <tr>
-            <td>mp3</td><td>LAME 320k</td>
-            <td class="yes">Embedded</td><td class="yes">Yes</td>
-            <td>Something old needs to play it — a car stereo, a hardware player.</td>
+            <td>mp3</td><td data-label="Codec">LAME 320k</td>
+            <td data-label="Cover art" class="yes">Embedded</td><td data-label="Apple Music" class="yes">Yes</td>
+            <td data-label="Use it when">Something old needs to play it — a car stereo, a hardware player.</td>
           </tr>
           <tr>
-            <td>opus</td><td>stream copy</td>
-            <td class="no">Beside the tracks</td><td class="no">No</td>
-            <td>You want the audio untouched and your player handles Ogg.</td>
+            <td>opus</td><td data-label="Codec">stream copy</td>
+            <td data-label="Cover art" class="no">Beside the tracks</td><td data-label="Apple Music" class="no">No</td>
+            <td data-label="Use it when">You want the audio untouched and your player handles Ogg.</td>
           </tr>
         </tbody>
       </table>
@@ -946,11 +1188,11 @@ footer .copyright a { text-decoration: underline; text-underline-offset: 2px; }
     <div class="grid" style="margin-top:16px">
       <div class="card">
         <h3>Prefer cargo?</h3>
-        <p style="font-family:var(--mono);font-size:13px;color:var(--text);margin-top:8px">cargo install --git https://github.com/alexnodeland/sleeve</p>
+        <p class="cmdline">cargo install --git https://github.com/alexnodeland/sleeve</p>
       </div>
       <div class="card">
         <h3>Pin a version</h3>
-        <p style="font-family:var(--mono);font-size:13px;color:var(--text);margin-top:8px">SLEEVE_VERSION=v0.1.1 SLEEVE_PREFIX=~/.local</p>
+        <p class="cmdline">SLEEVE_VERSION=v0.1.1 SLEEVE_PREFIX=~/.local</p>
       </div>
     </div>
   </div>
@@ -978,14 +1220,18 @@ footer .copyright a { text-decoration: underline; text-underline-offset: 2px; }
 
 <footer>
   <div class="wrap">
-    <span class="mono">sleeve</span>
-    <a href="https://github.com/alexnodeland/sleeve">GitHub</a>
-    <a href="https://github.com/alexnodeland/sleeve/releases">Releases</a>
-    <a href="https://github.com/alexnodeland/sleeve/blob/main/CHANGELOG.md">Changelog</a>
-    <a href="https://github.com/alexnodeland/sleeve/blob/main/CONTRIBUTING.md">Contributing</a>
+    <nav class="links" aria-label="Footer">
+      <span class="mono">sleeve</span>
+      <a href="https://github.com/alexnodeland/sleeve">GitHub</a>
+      <a href="https://github.com/alexnodeland/sleeve/releases">Releases</a>
+      <a href="https://github.com/alexnodeland/sleeve/blob/main/CHANGELOG.md">Changelog</a>
+      <a href="https://github.com/alexnodeland/sleeve/blob/main/CONTRIBUTING.md">Contributing</a>
+    </nav>
     <span class="spacer"></span>
-    <span class="mono">MIT or Apache-2.0</span>
-    <span class="mono copyright">&copy; 2026 <a href="https://alexnodeland.com">Alex Nodeland</a></span>
+    <div class="meta">
+      <span class="mono">MIT or Apache-2.0</span>
+      <span class="mono copyright">&copy; 2026 <a href="https://alexnodeland.com">Alex Nodeland</a></span>
+    </div>
   </div>
 </footer>
 
