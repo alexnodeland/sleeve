@@ -14,8 +14,11 @@ edition = "2024"
 rust-version = "1.85"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/alexnodeland/sleeve"
+homepage = "https://alexnodeland.github.io/sleeve/"
+documentation = "https://alexnodeland.github.io/sleeve/"
 authors = ["Alex Nodeland <nodeland.alex@gmail.com>"]
 description = "Split a chapter-marked YouTube video into tagged audio tracks with cover art"
+# crates.io allows five, and these are the five someone would actually search.
 keywords = ["youtube", "audio", "ffmpeg", "yt-dlp", "music"]
 categories = ["command-line-utilities", "multimedia::audio"]
 readme = "README.md"

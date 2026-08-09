@@ -1,0 +1,59 @@
+# Publish site/ to GitHub Pages.
+#
+# The site is one self-contained HTML file — no build step, no dependencies, no
+# external requests at runtime. So this workflow uploads the directory as-is.
+#
+# Requires Settings → Pages → Source = "GitHub Actions" on the repository. That
+# is a one-time click; without it the deploy job fails with a 404.
+
+name: pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never let two deploys race; queue instead, and do not cancel a deploy that is
+# already publishing.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: build and deploy
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Guard against external requests
+        # The page must stay self-contained: no CDN scripts, no remote fonts, no
+        # tracking. A stray absolute URL in src/href is the way that regresses,
+        # so fail the deploy rather than ship it.
+        run: |
+          set -euo pipefail
+          if grep -nEo '(src|href)="https?://[^"]+"' site/index.html \
+             | grep -v 'href="https://github.com' \
+             | grep -v 'href="https://raw.githubusercontent.com'; then
+            echo "::error::site/index.html loads something from an external host"
+            exit 1
+          fi
+          echo "no external resource loads"
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deploy
+        uses: actions/deploy-pages@v4
