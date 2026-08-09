@@ -18,7 +18,7 @@
 <meta name="twitter:description" content="One long video in. A tagged album out.">
 <meta name="author" content="Alex Nodeland">
 
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%23161C26'/><circle cx='16' cy='16' r='10' fill='none' stroke='%23E8A33D' stroke-width='2'/><circle cx='16' cy='16' r='2.5' fill='%23E8A33D'/></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='l' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23E8A33D'/><stop offset='1' stop-color='%23C2543A'/></linearGradient></defs><rect width='32' height='32' rx='7' fill='%23121722'/><circle cx='16' cy='16' r='12' fill='%230C1017' stroke='%2339435A'/><circle cx='16' cy='16' r='9' fill='none' stroke='%23242D3E'/><circle cx='16' cy='16' r='6.8' fill='none' stroke='%23242D3E'/><circle cx='16' cy='16' r='4.5' fill='url(%23l)'/><circle cx='16' cy='16' r='0.9' fill='%23121722'/></svg>">
 
 <style>
 /* ============================================================
@@ -191,6 +191,13 @@ h3 {
   text-decoration: none;
 }
 
+/* The logo is the record from the README hero: dark disc, grooves, the
+   orange-to-rust label. Its colors are fixed brand colors, not theme
+   tokens — the mark reads the same on every ground. */
+.mark .disc { transform-origin: 16px 16px; transform-box: view-box; }
+.brand:hover .mark .disc { animation: discSpin 1.6s linear infinite; }
+@keyframes discSpin { to { transform: rotate(360deg); } }
+
 .topbar nav {
   margin-left: auto;
   display: flex;
@@ -237,7 +244,23 @@ h3 {
   font-size: clamp(16px, 2vw, 19px);
   color: var(--text-2);
   max-width: 56ch;
-  margin: 0 0 36px;
+  margin: 0;
+}
+
+/* Copy on the left, the record leaving its sleeve on the right — the same
+   animation the README opens with. */
+.hero-top {
+  display: flex;
+  align-items: center;
+  gap: 48px;
+  margin-bottom: 40px;
+}
+.hero-copy { flex: 1; min-width: 0; }
+.hero-art { flex: 0 1 360px; min-width: 280px; }
+.hero-art svg { display: block; width: 100%; height: auto; }
+@media (max-width: 880px) {
+  .hero-top { flex-direction: column-reverse; gap: 30px; margin-bottom: 32px; }
+  .hero-art { flex: none; min-width: 0; width: min(320px, 86%); margin-inline: auto; }
 }
 
 /* -------------------------------------- the signature moment */
@@ -625,6 +648,7 @@ footer .links, footer .meta {
   white-space: nowrap;
 }
 footer .copyright a { text-decoration: underline; text-underline-offset: 2px; }
+footer .brandline { display: inline-flex; align-items: center; gap: 8px; }
 @media (max-width: 640px) {
   footer { font-size: 12.5px; }
   footer .links { gap: 13px; }
@@ -677,6 +701,7 @@ footer .copyright a { text-decoration: underline; text-underline-offset: 2px; }
   .tracks li { opacity: 1; transform: none; }
   .bar-legend .before { display: none; }
   .bar-legend .after { opacity: 1; }
+  .brand:hover .mark .disc { animation: none; }
   svg animate, svg animateTransform, svg animateMotion { display: none; }
 }
 </style>
@@ -687,11 +712,21 @@ footer .copyright a { text-decoration: underline; text-underline-offset: 2px; }
 <header class="topbar">
   <div class="wrap">
     <a class="brand" href="#top">
-      <svg width="20" height="20" viewBox="0 0 32 32" aria-hidden="true">
-        <rect width="32" height="32" rx="5" fill="var(--surface-2)" stroke="var(--edge-bright)"/>
-        <circle cx="16" cy="16" r="9.5" fill="none" stroke="var(--t2)" stroke-width="1.8"/>
-        <circle cx="16" cy="16" r="5" fill="none" stroke="var(--edge-bright)" stroke-width="1"/>
-        <circle cx="16" cy="16" r="2.2" fill="var(--t2)"/>
+      <svg class="mark" width="22" height="22" viewBox="0 0 32 32" aria-hidden="true">
+        <defs>
+          <linearGradient id="lbl-b" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#E8A33D"/><stop offset="1" stop-color="#C2543A"/>
+          </linearGradient>
+        </defs>
+        <rect x="0.5" y="0.5" width="31" height="31" rx="7" fill="#121722" stroke="#2E3A4E"/>
+        <g class="disc">
+          <circle cx="16" cy="16" r="11.5" fill="#0C1017" stroke="#39435A"/>
+          <circle cx="16" cy="16" r="8.6" fill="none" stroke="#242D3E"/>
+          <circle cx="16" cy="16" r="6.6" fill="none" stroke="#242D3E"/>
+          <circle cx="16" cy="16" r="4.4" fill="url(#lbl-b)"/>
+          <circle cx="16" cy="12.4" r="0.8" fill="#12161F" opacity="0.6"/>
+          <circle cx="16" cy="16" r="0.9" fill="#121722"/>
+        </g>
       </svg>
       sleeve
     </a>
@@ -710,12 +745,69 @@ footer .copyright a { text-decoration: underline; text-underline-offset: 2px; }
 <!-- ============================================ HERO -->
 <section class="hero">
   <div class="wrap">
-    <h1>One long video in.<br><span class="dim">A tagged album out.</span></h1>
-    <p class="sub">
-      Full albums and concert recordings get posted as a single video, with the
-      track listing living only in the chapter markers. <strong>sleeve</strong>
-      reads those markers and gives you back an album.
-    </p>
+    <div class="hero-top">
+      <div class="hero-copy">
+        <h1>One long video in.<br><span class="dim">A tagged album out.</span></h1>
+        <p class="sub">
+          Full albums and concert recordings get posted as a single video, with the
+          track listing living only in the chapter markers. <strong>sleeve</strong>
+          reads those markers and gives you back an album.
+        </p>
+      </div>
+
+      <!-- The README hero's record and jacket, colors and motion intact. -->
+      <div class="hero-art" aria-hidden="true">
+        <svg viewBox="54 50 310 200">
+          <defs>
+            <linearGradient id="jacket-h" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#2A3446"/>
+              <stop offset="1" stop-color="#1D2534"/>
+            </linearGradient>
+            <linearGradient id="lbl-h" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#E8A33D"/>
+              <stop offset="1" stop-color="#C2543A"/>
+            </linearGradient>
+            <clipPath id="jacketClip-h">
+              <rect x="70" y="62" width="176" height="176" rx="8"/>
+            </clipPath>
+          </defs>
+
+          <!-- The record, sliding out of the jacket and turning. -->
+          <g>
+            <animateTransform attributeName="transform" type="translate"
+              values="-46 0; 0 0; 0 0; -46 0" keyTimes="0; 0.28; 0.72; 1"
+              dur="7s" repeatCount="indefinite" calcMode="spline"
+              keySplines="0.4 0 0.2 1; 0 0 1 1; 0.4 0 0.2 1"/>
+            <g>
+              <animateTransform attributeName="transform" type="rotate"
+                from="0 268 150" to="360 268 150" dur="9s" repeatCount="indefinite"/>
+              <circle cx="268" cy="150" r="84" fill="#0C1017"/>
+              <circle cx="268" cy="150" r="84" fill="none" stroke="#39435A" stroke-width="1"/>
+              <circle cx="268" cy="150" r="72" fill="none" stroke="#242D3E" stroke-width="1"/>
+              <circle cx="268" cy="150" r="63" fill="none" stroke="#242D3E" stroke-width="1"/>
+              <circle cx="268" cy="150" r="54" fill="none" stroke="#242D3E" stroke-width="1"/>
+              <circle cx="268" cy="150" r="45" fill="none" stroke="#242D3E" stroke-width="1"/>
+              <circle cx="268" cy="150" r="30" fill="url(#lbl-h)"/>
+              <!-- Off-centre mark, so the rotation is actually visible. -->
+              <circle cx="268" cy="132" r="3.2" fill="#12161F" opacity="0.55"/>
+              <circle cx="268" cy="150" r="4" fill="#121722"/>
+            </g>
+          </g>
+
+          <!-- The jacket. -->
+          <g clip-path="url(#jacketClip-h)">
+            <rect x="70" y="62" width="176" height="176" fill="url(#jacket-h)"/>
+            <rect x="70" y="62" width="176" height="176" fill="none" stroke="#3A465D" stroke-width="2"/>
+            <circle cx="158" cy="150" r="52" fill="none" stroke="#38445A" stroke-width="1.5" opacity="0.8"/>
+            <circle cx="158" cy="150" r="34" fill="none" stroke="#38445A" stroke-width="1.5" opacity="0.6"/>
+            <rect x="70" y="196" width="176" height="42" fill="#161D29" opacity="0.75"/>
+            <rect x="86" y="210" width="82" height="5" rx="2.5" fill="#E8A33D" opacity="0.85"/>
+            <rect x="86" y="222" width="52" height="4" rx="2" fill="#5C6B84"/>
+          </g>
+          <rect x="70.5" y="62.5" width="175" height="175" rx="8" fill="none" stroke="#44536D"/>
+        </svg>
+      </div>
+    </div>
 
     <div class="transform">
       <div class="transform-head">
@@ -1221,7 +1313,22 @@ footer .copyright a { text-decoration: underline; text-underline-offset: 2px; }
 <footer>
   <div class="wrap">
     <nav class="links" aria-label="Footer">
-      <span class="mono">sleeve</span>
+      <span class="mono brandline">
+        <svg class="mark" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true">
+          <defs>
+            <linearGradient id="lbl-f" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#E8A33D"/><stop offset="1" stop-color="#C2543A"/>
+            </linearGradient>
+          </defs>
+          <rect x="0.5" y="0.5" width="31" height="31" rx="7" fill="#121722" stroke="#2E3A4E"/>
+          <circle cx="16" cy="16" r="11.5" fill="#0C1017" stroke="#39435A"/>
+          <circle cx="16" cy="16" r="8.6" fill="none" stroke="#242D3E"/>
+          <circle cx="16" cy="16" r="6.6" fill="none" stroke="#242D3E"/>
+          <circle cx="16" cy="16" r="4.4" fill="url(#lbl-f)"/>
+          <circle cx="16" cy="16" r="0.9" fill="#121722"/>
+        </svg>
+        sleeve
+      </span>
       <a href="https://github.com/alexnodeland/sleeve">GitHub</a>
       <a href="https://github.com/alexnodeland/sleeve/releases">Releases</a>
       <a href="https://github.com/alexnodeland/sleeve/blob/main/CHANGELOG.md">Changelog</a>
