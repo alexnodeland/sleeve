@@ -18,15 +18,17 @@
 <meta name="twitter:description" content="One long video in. A tagged album out.">
 <meta name="author" content="Alex Nodeland">
 
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%23161C26'/><circle cx='16' cy='16' r='10' fill='none' stroke='%23E8A33D' stroke-width='2'/><circle cx='16' cy='16' r='2.5' fill='%23E8A33D'/></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='l' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23E8A33D'/><stop offset='1' stop-color='%23C2543A'/></linearGradient></defs><rect width='32' height='32' rx='7' fill='%23121722'/><circle cx='16' cy='16' r='12' fill='%230C1017' stroke='%2339435A'/><circle cx='16' cy='16' r='9' fill='none' stroke='%23242D3E'/><circle cx='16' cy='16' r='6.8' fill='none' stroke='%23242D3E'/><circle cx='16' cy='16' r='4.5' fill='url(%23l)'/><circle cx='16' cy='16' r='0.9' fill='%23121722'/></svg>">
 
 <style>
 /* ============================================================
    sleeve — landing page
 
-   Identity face is monospace, deliberately. The thing this tool
-   produces is a printed track listing: numbers, titles, durations,
-   aligned. The sans is support, not the other way round.
+   Two voices. The sans is the page's own: headings, navigation,
+   labels, prose. The mono appears only when the tool itself is
+   speaking — commands, filenames, the track listing it prints.
+   Chrome set in mono because "it's a CLI" is a costume; content
+   that IS terminal text is the real thing.
 
    The four hues are semantic. They mark chapter boundaries and
    nothing else, which is the same job they do in the diagrams.
@@ -88,6 +90,10 @@
 html { scroll-behavior: smooth; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 
+/* No page-level horizontal overflow, ever. `clip` rather than `hidden`
+   so no scroll container is created and the sticky topbar keeps working. */
+html, body { overflow-x: clip; }
+
 body {
   margin: 0;
   background: var(--ground);
@@ -120,8 +126,8 @@ section { padding-block: 88px; }
 /* ---------------------------------------------- section headings */
 
 .eyebrow {
-  font-family: var(--mono);
-  font-size: 12px;
+  font-size: 11.5px;
+  font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--text-3);
@@ -180,20 +186,26 @@ h3 {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-family: var(--mono);
-  font-size: 15px;
+  font-size: 16.5px;
   font-weight: 700;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
   text-decoration: none;
 }
+
+/* The logo is the record from the README hero: dark disc, grooves, the
+   orange-to-rust label. Its colors are fixed brand colors, not theme
+   tokens — the mark reads the same on every ground. */
+.mark .disc { transform-origin: 16px 16px; transform-box: view-box; }
+.brand:hover .mark .disc { animation: discSpin 1.6s linear infinite; }
+@keyframes discSpin { to { transform: rotate(360deg); } }
 
 .topbar nav {
   margin-left: auto;
   display: flex;
   align-items: center;
   gap: 22px;
-  font-family: var(--mono);
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 500;
 }
 .topbar nav a {
   color: var(--text-2);
@@ -203,14 +215,16 @@ h3 {
 .topbar nav a:hover { color: var(--text); }
 
 .ver {
-  font-family: var(--mono);
-  font-size: 11.5px;
+  font-size: 12px;
+  font-weight: 500;
   color: var(--text-3);
   border: 1px solid var(--edge);
   border-radius: 999px;
   padding: 2px 9px;
 }
 @media (max-width: 620px) { .topbar nav .hide-sm { display: none; } }
+@media (max-width: 420px) { .topbar nav { gap: 16px; } }
+@media (max-width: 359px) { .ver { display: none; } }
 
 /* ================================================ hero */
 
@@ -231,7 +245,23 @@ h3 {
   font-size: clamp(16px, 2vw, 19px);
   color: var(--text-2);
   max-width: 56ch;
-  margin: 0 0 36px;
+  margin: 0;
+}
+
+/* Copy on the left, the record leaving its sleeve on the right — the same
+   animation the README opens with. */
+.hero-top {
+  display: flex;
+  align-items: center;
+  gap: 48px;
+  margin-bottom: 40px;
+}
+.hero-copy { flex: 1; min-width: 0; }
+.hero-art { flex: 0 1 360px; min-width: 280px; }
+.hero-art svg { display: block; width: 100%; height: auto; }
+@media (max-width: 880px) {
+  .hero-top { flex-direction: column-reverse; gap: 30px; margin-bottom: 32px; }
+  .hero-art { flex: none; min-width: 0; width: min(320px, 86%); margin-inline: auto; }
 }
 
 /* -------------------------------------- the signature moment */
@@ -253,6 +283,14 @@ h3 {
   color: var(--text-3);
 }
 .transform-head .grow { flex: 1; }
+/* The filename is one unbroken token; on narrow screens it truncates
+   rather than shoving the duration out of the panel. */
+.transform-head span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
 /* the bar: one file, then chapters */
 .bar {
@@ -354,26 +392,34 @@ h3 {
 
 .cmd {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 12px;
   background: var(--surface-2);
   border: 1px solid var(--edge);
   border-radius: var(--radius);
   padding: 12px 12px 12px 16px;
   font-family: var(--mono);
-  font-size: 13.5px;
-  overflow-x: auto;
+  font-size: 13px;
   flex: 1;
   min-width: min(100%, 420px);
 }
-.cmd code { white-space: nowrap; }
+/* The command wraps instead of scrolling: a soft wrap copies as one line,
+   and nothing ever pushes past the right edge. */
+.cmd code {
+  flex: 1;
+  min-width: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.55;
+}
 .cmd .prompt { color: var(--t1); user-select: none; }
 
 .copy {
   margin-left: auto;
   flex: none;
-  font-family: var(--mono);
+  font-family: var(--sans);
   font-size: 12px;
+  font-weight: 500;
   color: var(--text-2);
   background: var(--surface);
   border: 1px solid var(--edge);
@@ -389,8 +435,8 @@ h3 {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-family: var(--mono);
-  font-size: 13.5px;
+  font-size: 14px;
+  font-weight: 500;
   text-decoration: none;
   padding: 13px 18px;
   border-radius: var(--radius);
@@ -402,8 +448,7 @@ h3 {
 
 .hero-note {
   margin-top: 14px;
-  font-family: var(--mono);
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-3);
 }
 
@@ -412,7 +457,8 @@ h3 {
 .grid {
   display: grid;
   gap: 16px;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  /* min(100%, …) so the track minimum can never exceed the container. */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
 }
 
 .card {
@@ -423,9 +469,16 @@ h3 {
 }
 .card p { margin: 0; color: var(--text-2); font-size: 14.5px; }
 .card .ico { display: block; margin-bottom: 14px; }
+.card .cmdline {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--text);
+  margin-top: 8px;
+  overflow-wrap: anywhere;
+}
 
 /* three claims, each with a failure it prevents */
-.claims { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+.claims { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); }
 .claim {
   border: 1px solid var(--edge);
   border-radius: var(--radius);
@@ -433,8 +486,8 @@ h3 {
   padding: 24px;
 }
 .claim .tag {
-  font-family: var(--mono);
   font-size: 11px;
+  font-weight: 650;
   letter-spacing: .1em;
   text-transform: uppercase;
   color: var(--t1);
@@ -444,8 +497,7 @@ h3 {
 .claim p { color: var(--text-2); font-size: 14.5px; margin: 0 0 10px; }
 .claim p:last-child { margin-bottom: 0; }
 .claim .why {
-  font-family: var(--mono);
-  font-size: 12.5px;
+  font-size: 13px;
   color: var(--text-3);
   border-left: 2px solid var(--edge-bright);
   padding-left: 12px;
@@ -456,9 +508,17 @@ h3 {
 
 figure { margin: 0; }
 figure svg { display: block; width: 100%; height: auto; }
+
+/* Each diagram exists twice: a wide left-to-right telling and a stacked
+   top-to-bottom one. Small screens get the stacked one at full legibility —
+   nothing is scaled down to squint size, and nothing scrolls sideways. */
+figure .fig-mobile { display: none; max-width: 340px; margin-inline: auto; }
+@media (max-width: 640px) {
+  figure .fig-desktop { display: none; }
+  figure .fig-mobile { display: block; }
+}
 figcaption {
-  font-family: var(--mono);
-  font-size: 12.5px;
+  font-size: 13px;
   color: var(--text-3);
   margin-top: 14px;
   text-align: center;
@@ -477,12 +537,11 @@ figcaption {
 table { border-collapse: collapse; width: 100%; font-size: 14.5px; min-width: 620px; }
 thead th {
   text-align: left;
-  font-family: var(--mono);
   font-size: 11.5px;
   letter-spacing: .1em;
   text-transform: uppercase;
   color: var(--text-3);
-  font-weight: 500;
+  font-weight: 600;
   padding: 14px 18px;
   background: var(--surface-2);
   border-bottom: 1px solid var(--edge);
@@ -492,6 +551,42 @@ tbody tr:last-child td { border-bottom: none; }
 tbody td:first-child { font-family: var(--mono); color: var(--text); white-space: nowrap; }
 .yes { color: var(--t1); }
 .no  { color: var(--text-3); }
+
+/* Below the width where five columns fit, the grid becomes one card per
+   format, each cell labelled inline. No sideways scrolling. */
+@media (max-width: 680px) {
+  .tbl-wrap { overflow: visible; border: none; border-radius: 0; }
+  table, tbody, tr, td { display: block; }
+  table { min-width: 0; }
+  thead { display: none; }
+  tbody tr {
+    background: var(--surface);
+    border: 1px solid var(--edge);
+    border-radius: var(--radius);
+    padding: 8px 0 12px;
+  }
+  tbody tr + tr { margin-top: 12px; }
+  tbody td {
+    display: flex;
+    gap: 14px;
+    align-items: baseline;
+    padding: 5px 18px;
+    border-bottom: none;
+  }
+  tbody td:first-child { font-size: 15.5px; padding: 10px 18px 6px; }
+  tbody td::before {
+    content: attr(data-label);
+    flex: none;
+    width: 96px;
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+  tbody td:first-child::before { content: none; }
+}
 
 /* ================================================ steps / install */
 
@@ -507,19 +602,25 @@ tbody td:first-child { font-family: var(--mono); color: var(--text); white-space
   padding: 20px 22px;
 }
 .step .k {
-  font-family: var(--mono);
-  font-size: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
   color: var(--text-3);
   border: 1px solid var(--edge);
   border-radius: 6px;
-  padding: 3px 8px;
+  padding: 4px 9px;
   white-space: nowrap;
 }
+/* The 1fr column must be allowed to shrink below its content's intrinsic
+   width, or a long command widens the whole page. */
+.step > div { min-width: 0; }
 .step pre {
   margin: 0;
   font-family: var(--mono);
   font-size: 13px;
-  overflow-x: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
   color: var(--text);
 }
 .step .hint { margin: 8px 0 0; font-size: 13.5px; color: var(--text-2); }
@@ -532,15 +633,65 @@ footer {
   color: var(--text-3);
   font-size: 13.5px;
 }
-footer .wrap { display: flex; flex-wrap: wrap; gap: 18px 28px; align-items: center; }
+footer .wrap { display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: center; }
 footer a { color: var(--text-2); text-decoration: none; }
 footer a:hover { color: var(--text); }
 footer .spacer { flex: 1; }
-footer .mono { font-family: var(--mono); font-size: 12.5px; }
-/* The licence and the copyright are one cluster, so they wrap together
-   rather than the copyright stranding itself on its own line. */
-footer .copyright { white-space: nowrap; }
+footer .meta { font-size: 13px; }
+/* Two clusters, each locked to a single row: the links, and the
+   licence + copyright. On wide screens they share one row; when the room
+   runs out the meta cluster drops below as a whole — no item ever
+   straggles onto its own line. */
+footer .links, footer .meta {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  white-space: nowrap;
+}
 footer .copyright a { text-decoration: underline; text-underline-offset: 2px; }
+footer .brandline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+@media (max-width: 640px) {
+  footer { font-size: 12.5px; }
+  footer .links { gap: 13px; }
+  footer .meta { gap: 14px; font-size: 12.5px; }
+  /* Stacked rows read best flush left; the spacer only serves the
+     single-row desktop layout. */
+  footer .spacer { display: none; }
+}
+@media (max-width: 374px) {
+  /* The brand already lives in the topbar; on the narrowest screens the
+     wordmark yields so the four links hold one row. */
+  footer .brandline { display: none; }
+  footer { font-size: 12px; }
+}
+
+/* ================================================ small screens */
+
+@media (max-width: 640px) {
+  /* The faded-out "before" label still holds its width, which squeezes the
+     two "after" labels into ragged wraps. There is no room for all three,
+     so the transient one goes. */
+  .bar-legend .before { display: none; }
+  .bar-legend span { white-space: nowrap; }
+
+  .cmd { font-size: 12px; }
+  .step pre { font-size: 12px; }
+  .card .cmdline { font-size: 12px; }
+
+  .tracks { font-size: 12px; }
+  .tracks li { gap: 9px; }
+  .tracks .leader { min-width: 10px; }
+
+  .panel { padding: 18px; }
+}
 
 /* ================================================ motion off */
 
@@ -558,6 +709,7 @@ footer .copyright a { text-decoration: underline; text-underline-offset: 2px; }
   .tracks li { opacity: 1; transform: none; }
   .bar-legend .before { display: none; }
   .bar-legend .after { opacity: 1; }
+  .brand:hover .mark .disc { animation: none; }
   svg animate, svg animateTransform, svg animateMotion { display: none; }
 }
 </style>
@@ -568,11 +720,21 @@ footer .copyright a { text-decoration: underline; text-underline-offset: 2px; }
 <header class="topbar">
   <div class="wrap">
     <a class="brand" href="#top">
-      <svg width="20" height="20" viewBox="0 0 32 32" aria-hidden="true">
-        <rect width="32" height="32" rx="5" fill="var(--surface-2)" stroke="var(--edge-bright)"/>
-        <circle cx="16" cy="16" r="9.5" fill="none" stroke="var(--t2)" stroke-width="1.8"/>
-        <circle cx="16" cy="16" r="5" fill="none" stroke="var(--edge-bright)" stroke-width="1"/>
-        <circle cx="16" cy="16" r="2.2" fill="var(--t2)"/>
+      <svg class="mark" width="22" height="22" viewBox="0 0 32 32" aria-hidden="true">
+        <defs>
+          <linearGradient id="lbl-b" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#E8A33D"/><stop offset="1" stop-color="#C2543A"/>
+          </linearGradient>
+        </defs>
+        <rect x="0.5" y="0.5" width="31" height="31" rx="7" fill="#121722" stroke="#2E3A4E"/>
+        <g class="disc">
+          <circle cx="16" cy="16" r="11.5" fill="#0C1017" stroke="#39435A"/>
+          <circle cx="16" cy="16" r="8.6" fill="none" stroke="#242D3E"/>
+          <circle cx="16" cy="16" r="6.6" fill="none" stroke="#242D3E"/>
+          <circle cx="16" cy="16" r="4.4" fill="url(#lbl-b)"/>
+          <circle cx="16" cy="12.4" r="0.8" fill="#12161F" opacity="0.6"/>
+          <circle cx="16" cy="16" r="0.9" fill="#121722"/>
+        </g>
       </svg>
       sleeve
     </a>
@@ -591,12 +753,69 @@ footer .copyright a { text-decoration: underline; text-underline-offset: 2px; }
 <!-- ============================================ HERO -->
 <section class="hero">
   <div class="wrap">
-    <h1>One long video in.<br><span class="dim">A tagged album out.</span></h1>
-    <p class="sub">
-      Full albums and concert recordings get posted as a single video, with the
-      track listing living only in the chapter markers. <strong>sleeve</strong>
-      reads those markers and gives you back an album.
-    </p>
+    <div class="hero-top">
+      <div class="hero-copy">
+        <h1>One long video in.<br><span class="dim">A tagged album out.</span></h1>
+        <p class="sub">
+          Full albums and concert recordings get posted as a single video, with the
+          track listing living only in the chapter markers. <strong>sleeve</strong>
+          reads those markers and gives you back an album.
+        </p>
+      </div>
+
+      <!-- The README hero's record and jacket, colors and motion intact. -->
+      <div class="hero-art" aria-hidden="true">
+        <svg viewBox="54 50 310 200">
+          <defs>
+            <linearGradient id="jacket-h" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#2A3446"/>
+              <stop offset="1" stop-color="#1D2534"/>
+            </linearGradient>
+            <linearGradient id="lbl-h" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#E8A33D"/>
+              <stop offset="1" stop-color="#C2543A"/>
+            </linearGradient>
+            <clipPath id="jacketClip-h">
+              <rect x="70" y="62" width="176" height="176" rx="8"/>
+            </clipPath>
+          </defs>
+
+          <!-- The record, sliding out of the jacket and turning. -->
+          <g>
+            <animateTransform attributeName="transform" type="translate"
+              values="-46 0; 0 0; 0 0; -46 0" keyTimes="0; 0.28; 0.72; 1"
+              dur="7s" repeatCount="indefinite" calcMode="spline"
+              keySplines="0.4 0 0.2 1; 0 0 1 1; 0.4 0 0.2 1"/>
+            <g>
+              <animateTransform attributeName="transform" type="rotate"
+                from="0 268 150" to="360 268 150" dur="9s" repeatCount="indefinite"/>
+              <circle cx="268" cy="150" r="84" fill="#0C1017"/>
+              <circle cx="268" cy="150" r="84" fill="none" stroke="#39435A" stroke-width="1"/>
+              <circle cx="268" cy="150" r="72" fill="none" stroke="#242D3E" stroke-width="1"/>
+              <circle cx="268" cy="150" r="63" fill="none" stroke="#242D3E" stroke-width="1"/>
+              <circle cx="268" cy="150" r="54" fill="none" stroke="#242D3E" stroke-width="1"/>
+              <circle cx="268" cy="150" r="45" fill="none" stroke="#242D3E" stroke-width="1"/>
+              <circle cx="268" cy="150" r="30" fill="url(#lbl-h)"/>
+              <!-- Off-centre mark, so the rotation is actually visible. -->
+              <circle cx="268" cy="132" r="3.2" fill="#12161F" opacity="0.55"/>
+              <circle cx="268" cy="150" r="4" fill="#121722"/>
+            </g>
+          </g>
+
+          <!-- The jacket. -->
+          <g clip-path="url(#jacketClip-h)">
+            <rect x="70" y="62" width="176" height="176" fill="url(#jacket-h)"/>
+            <rect x="70" y="62" width="176" height="176" fill="none" stroke="#3A465D" stroke-width="2"/>
+            <circle cx="158" cy="150" r="52" fill="none" stroke="#38445A" stroke-width="1.5" opacity="0.8"/>
+            <circle cx="158" cy="150" r="34" fill="none" stroke="#38445A" stroke-width="1.5" opacity="0.6"/>
+            <rect x="70" y="196" width="176" height="42" fill="#161D29" opacity="0.75"/>
+            <rect x="86" y="210" width="82" height="5" rx="2.5" fill="#E8A33D" opacity="0.85"/>
+            <rect x="86" y="222" width="52" height="4" rx="2" fill="#5C6B84"/>
+          </g>
+          <rect x="70.5" y="62.5" width="175" height="175" rx="8" fill="none" stroke="#44536D"/>
+        </svg>
+      </div>
+    </div>
 
     <div class="transform">
       <div class="transform-head">
@@ -656,7 +875,7 @@ footer .copyright a { text-decoration: underline; text-underline-offset: 2px; }
     </p>
 
     <figure class="panel">
-      <svg viewBox="0 0 1000 250" role="img" aria-label="Four steps: read the chapter markers, download the audio once, square the cover art, then cut and tag each track.">
+      <svg class="fig-desktop" viewBox="0 0 1000 250" role="img" aria-label="Four steps: read the chapter markers, download the audio once, square the cover art, then cut and tag each track.">
         <defs>
           <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
             <path d="M0 0 L10 5 L0 10 z" fill="var(--edge-bright)"/>
@@ -674,7 +893,7 @@ footer .copyright a { text-decoration: underline; text-underline-offset: 2px; }
             <rect x="144" y="76" width="44" height="20" rx="3" fill="var(--t4)"/>
           </g>
           <text x="114" y="134" text-anchor="middle" font-family="var(--sans)" font-size="16" font-weight="650" fill="var(--text)">read the markers</text>
-          <text x="114" y="158" text-anchor="middle" font-family="var(--mono)" font-size="12.5" fill="var(--text-3)">the track listing</text>
+          <text x="114" y="158" text-anchor="middle" font-family="var(--sans)" font-size="13" fill="var(--text-3)">the track listing</text>
         </g>
 
         <!-- 2 -->
@@ -686,7 +905,7 @@ footer .copyright a { text-decoration: underline; text-underline-offset: 2px; }
             <path d="M352 106 L388 106"/>
           </g>
           <text x="370" y="134" text-anchor="middle" font-family="var(--sans)" font-size="16" font-weight="650" fill="var(--text)">download once</text>
-          <text x="370" y="158" text-anchor="middle" font-family="var(--mono)" font-size="12.5" fill="var(--text-3)">best audio, untouched</text>
+          <text x="370" y="158" text-anchor="middle" font-family="var(--sans)" font-size="13" fill="var(--text-3)">best audio, untouched</text>
         </g>
 
         <!-- 3 -->
@@ -698,7 +917,7 @@ footer .copyright a { text-decoration: underline; text-underline-offset: 2px; }
             <animate attributeName="stroke-dashoffset" values="0;-14" dur="1.5s" repeatCount="indefinite"/>
           </rect>
           <text x="626" y="134" text-anchor="middle" font-family="var(--sans)" font-size="16" font-weight="650" fill="var(--text)">square the art</text>
-          <text x="626" y="158" text-anchor="middle" font-family="var(--mono)" font-size="12.5" fill="var(--text-3)">find the bars, then pad</text>
+          <text x="626" y="158" text-anchor="middle" font-family="var(--sans)" font-size="13" fill="var(--text-3)">find the bars, then pad</text>
         </g>
 
         <!-- 4 -->
@@ -713,7 +932,7 @@ footer .copyright a { text-decoration: underline; text-underline-offset: 2px; }
             <rect x="864" y="98" width="74" height="6" rx="3" fill="var(--edge)"/>
           </g>
           <text x="884" y="134" text-anchor="middle" font-family="var(--sans)" font-size="16" font-weight="650" fill="var(--text)">cut, tag, embed</text>
-          <text x="884" y="158" text-anchor="middle" font-family="var(--mono)" font-size="12.5" fill="var(--text-3)">one file per chapter</text>
+          <text x="884" y="158" text-anchor="middle" font-family="var(--sans)" font-size="13" fill="var(--text-3)">one file per chapter</text>
         </g>
 
         <g stroke="var(--edge-bright)" stroke-width="2" marker-end="url(#ar)">
@@ -726,7 +945,78 @@ footer .copyright a { text-decoration: underline; text-underline-offset: 2px; }
           <animate attributeName="opacity" values="0;1;1;0" dur="4.5s" repeatCount="indefinite"/>
         </circle>
 
-        <text x="500" y="228" text-anchor="middle" font-family="var(--mono)" font-size="12.5" fill="var(--text-3)">yt-dlp reads and fetches · ffmpeg cuts, encodes and tags</text>
+        <text x="500" y="228" text-anchor="middle" font-family="var(--sans)" font-size="13" fill="var(--text-3)">yt-dlp reads and fetches · ffmpeg cuts, encodes and tags</text>
+      </svg>
+
+      <!-- Same four steps, stacked for narrow screens. -->
+      <svg class="fig-mobile" viewBox="0 0 260 805" role="img" aria-label="Four steps: read the chapter markers, download the audio once, square the cover art, then cut and tag each track.">
+        <defs>
+          <marker id="ar-m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--edge-bright)"/>
+          </marker>
+        </defs>
+
+        <!-- 1 -->
+        <g transform="translate(16,-30)">
+          <rect x="6" y="40" width="216" height="150" rx="10" fill="var(--surface-2)" stroke="var(--edge)"/>
+          <g>
+            <rect x="38" y="74" width="152" height="24" rx="4" fill="var(--ground)" stroke="var(--edge)"/>
+            <rect x="40" y="76" width="38" height="20" rx="3" fill="var(--t1)"/>
+            <rect x="80" y="76" width="32" height="20" rx="3" fill="var(--t2)"/>
+            <rect x="114" y="76" width="28" height="20" rx="3" fill="var(--t3)"/>
+            <rect x="144" y="76" width="44" height="20" rx="3" fill="var(--t4)"/>
+          </g>
+          <text x="114" y="134" text-anchor="middle" font-family="var(--sans)" font-size="16" font-weight="650" fill="var(--text)">read the markers</text>
+          <text x="114" y="158" text-anchor="middle" font-family="var(--sans)" font-size="13" fill="var(--text-3)">the track listing</text>
+        </g>
+
+        <!-- 2 -->
+        <g transform="translate(-240,165)">
+          <rect x="262" y="40" width="216" height="150" rx="10" fill="var(--surface-2)" stroke="var(--edge)"/>
+          <g stroke="var(--t2)" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M370 68 L370 96"/>
+            <path d="M360 87 L370 97 L380 87"/>
+            <path d="M352 106 L388 106"/>
+          </g>
+          <text x="370" y="134" text-anchor="middle" font-family="var(--sans)" font-size="16" font-weight="650" fill="var(--text)">download once</text>
+          <text x="370" y="158" text-anchor="middle" font-family="var(--sans)" font-size="13" fill="var(--text-3)">best audio, untouched</text>
+        </g>
+
+        <!-- 3 -->
+        <g transform="translate(-496,360)">
+          <rect x="518" y="40" width="216" height="150" rx="10" fill="var(--surface-2)" stroke="var(--edge)"/>
+          <rect x="588" y="72" width="76" height="34" rx="4" fill="var(--ground)" stroke="var(--edge)"/>
+          <rect x="597" y="72" width="58" height="34" fill="var(--edge)"/>
+          <rect x="608" y="64" width="36" height="50" rx="4" fill="none" stroke="var(--t2)" stroke-width="2" stroke-dasharray="4 3">
+            <animate attributeName="stroke-dashoffset" values="0;-14" dur="1.5s" repeatCount="indefinite"/>
+          </rect>
+          <text x="626" y="134" text-anchor="middle" font-family="var(--sans)" font-size="16" font-weight="650" fill="var(--text)">square the art</text>
+          <text x="626" y="158" text-anchor="middle" font-family="var(--sans)" font-size="13" fill="var(--text-3)">find the bars, then pad</text>
+        </g>
+
+        <!-- 4 -->
+        <g transform="translate(-752,555)">
+          <rect x="774" y="40" width="220" height="150" rx="10" fill="var(--surface-2)" stroke="var(--edge)"/>
+          <g>
+            <rect x="812" y="68" width="40" height="40" rx="5" fill="var(--ground)" stroke="var(--edge)"/>
+            <circle cx="832" cy="88" r="11" fill="none" stroke="var(--t2)" stroke-width="2"/>
+            <circle cx="832" cy="88" r="2.6" fill="var(--t2)"/>
+            <rect x="864" y="70" width="88" height="6" rx="3" fill="var(--edge-bright)"/>
+            <rect x="864" y="84" width="62" height="6" rx="3" fill="var(--edge)"/>
+            <rect x="864" y="98" width="74" height="6" rx="3" fill="var(--edge)"/>
+          </g>
+          <text x="884" y="134" text-anchor="middle" font-family="var(--sans)" font-size="16" font-weight="650" fill="var(--text)">cut, tag, embed</text>
+          <text x="884" y="158" text-anchor="middle" font-family="var(--sans)" font-size="13" fill="var(--text-3)">one file per chapter</text>
+        </g>
+
+        <g stroke="var(--edge-bright)" stroke-width="2" marker-end="url(#ar-m)">
+          <path d="M130 166 L130 197"/>
+          <path d="M130 361 L130 392"/>
+          <path d="M130 556 L130 587"/>
+        </g>
+
+        <text x="130" y="775" text-anchor="middle" font-family="var(--sans)" font-size="13" fill="var(--text-3)">yt-dlp reads and fetches</text>
+        <text x="130" y="795" text-anchor="middle" font-family="var(--sans)" font-size="13" fill="var(--text-3)">ffmpeg cuts, encodes and tags</text>
       </svg>
     </figure>
 
@@ -762,7 +1052,7 @@ footer .copyright a { text-decoration: underline; text-underline-offset: 2px; }
     </p>
 
     <figure class="panel">
-      <svg viewBox="0 0 1000 260" role="img" aria-label="Three panels: the thumbnail as served with bars, the detected picture inside it, and the final square with padding added.">
+      <svg class="fig-desktop" viewBox="0 0 1000 260" role="img" aria-label="Three panels: the thumbnail as served with bars, the detected picture inside it, and the final square with padding added.">
         <defs>
           <linearGradient id="pic" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0" stop-color="var(--t3)"/>
@@ -781,7 +1071,7 @@ footer .copyright a { text-decoration: underline; text-underline-offset: 2px; }
           <rect x="241" y="40" width="29" height="129" fill="var(--t3)" opacity="0.2"/>
           <rect x="40.5" y="40.5" width="229" height="128" rx="4" fill="none" stroke="var(--edge)"/>
           <text x="155" y="200" text-anchor="middle" font-family="var(--sans)" font-size="15" font-weight="650" fill="var(--text)">as served</text>
-          <text x="155" y="222" text-anchor="middle" font-family="var(--mono)" font-size="12" fill="var(--text-3)">bars baked in</text>
+          <text x="155" y="222" text-anchor="middle" font-family="var(--sans)" font-size="12.5" fill="var(--text-3)">bars baked in</text>
         </g>
 
         <g>
@@ -792,7 +1082,7 @@ footer .copyright a { text-decoration: underline; text-underline-offset: 2px; }
             <animate attributeName="stroke-dashoffset" values="0;-20" dur="1.6s" repeatCount="indefinite"/>
           </rect>
           <text x="500" y="200" text-anchor="middle" font-family="var(--sans)" font-size="15" font-weight="650" fill="var(--text)">detected</text>
-          <text x="500" y="222" text-anchor="middle" font-family="var(--mono)" font-size="12" fill="var(--text-3)">the real picture</text>
+          <text x="500" y="222" text-anchor="middle" font-family="var(--sans)" font-size="12.5" fill="var(--text-3)">the real picture</text>
         </g>
 
         <g>
@@ -804,12 +1094,64 @@ footer .copyright a { text-decoration: underline; text-underline-offset: 2px; }
           </g>
           <rect x="758.5" y="18.5" width="171" height="171" rx="4" fill="none" stroke="var(--edge-bright)"/>
           <text x="844" y="215" text-anchor="middle" font-family="var(--sans)" font-size="15" font-weight="650" fill="var(--text)">squared</text>
-          <text x="844" y="237" text-anchor="middle" font-family="var(--mono)" font-size="12" fill="var(--text-3)">padded, never cropped</text>
+          <text x="844" y="237" text-anchor="middle" font-family="var(--sans)" font-size="12.5" fill="var(--text-3)">padded, never cropped</text>
         </g>
 
         <g stroke="var(--edge-bright)" stroke-width="2" marker-end="url(#ar2)">
           <path d="M288 104 L362 104"/>
           <path d="M633 104 L735 104"/>
+        </g>
+      </svg>
+
+      <!-- Same three panels, stacked for narrow screens. -->
+      <svg class="fig-mobile" viewBox="0 0 260 710" role="img" aria-label="Three panels: the thumbnail as served with bars, the detected picture inside it, and the final square with padding added.">
+        <defs>
+          <linearGradient id="pic-m" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="var(--t3)"/>
+            <stop offset="0.5" stop-color="var(--t4)"/>
+            <stop offset="1" stop-color="var(--t1)"/>
+          </linearGradient>
+          <marker id="ar2-m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--edge-bright)"/>
+          </marker>
+        </defs>
+
+        <g transform="translate(-25,-30)">
+          <rect x="40" y="40" width="230" height="129" rx="4" fill="var(--ground)"/>
+          <rect x="69" y="40" width="172" height="129" fill="url(#pic-m)" opacity="0.92"/>
+          <rect x="40" y="40" width="29" height="129" fill="var(--t3)" opacity="0.2"/>
+          <rect x="241" y="40" width="29" height="129" fill="var(--t3)" opacity="0.2"/>
+          <rect x="40.5" y="40.5" width="229" height="128" rx="4" fill="none" stroke="var(--edge)"/>
+          <text x="155" y="200" text-anchor="middle" font-family="var(--sans)" font-size="15" font-weight="650" fill="var(--text)">as served</text>
+          <text x="155" y="222" text-anchor="middle" font-family="var(--sans)" font-size="12.5" fill="var(--text-3)">bars baked in</text>
+        </g>
+
+        <g transform="translate(-370,205)">
+          <rect x="385" y="40" width="230" height="129" rx="4" fill="var(--ground)"/>
+          <rect x="414" y="40" width="172" height="129" fill="url(#pic-m)" opacity="0.92"/>
+          <rect x="385.5" y="40.5" width="229" height="128" rx="4" fill="none" stroke="var(--edge)"/>
+          <rect x="414" y="40" width="172" height="129" fill="none" stroke="var(--t2)" stroke-width="2.5" stroke-dasharray="6 4">
+            <animate attributeName="stroke-dashoffset" values="0;-20" dur="1.6s" repeatCount="indefinite"/>
+          </rect>
+          <text x="500" y="200" text-anchor="middle" font-family="var(--sans)" font-size="15" font-weight="650" fill="var(--text)">detected</text>
+          <text x="500" y="222" text-anchor="middle" font-family="var(--sans)" font-size="12.5" fill="var(--text-3)">the real picture</text>
+        </g>
+
+        <g transform="translate(-714,462)">
+          <rect x="758" y="18" width="172" height="172" rx="4" fill="var(--ground)"/>
+          <rect x="758" y="40" width="172" height="129" fill="url(#pic-m)" opacity="0.92"/>
+          <g fill="var(--t1)" opacity="0.22">
+            <rect x="758" y="18" width="172" height="22"/>
+            <rect x="758" y="169" width="172" height="21"/>
+          </g>
+          <rect x="758.5" y="18.5" width="171" height="171" rx="4" fill="none" stroke="var(--edge-bright)"/>
+          <text x="844" y="215" text-anchor="middle" font-family="var(--sans)" font-size="15" font-weight="650" fill="var(--text)">squared</text>
+          <text x="844" y="237" text-anchor="middle" font-family="var(--sans)" font-size="12.5" fill="var(--text-3)">padded, never cropped</text>
+        </g>
+
+        <g stroke="var(--edge-bright)" stroke-width="2" marker-end="url(#ar2-m)">
+          <path d="M130 205 L130 232"/>
+          <path d="M130 440 L130 467"/>
         </g>
       </svg>
     </figure>
@@ -889,19 +1231,19 @@ footer .copyright a { text-decoration: underline; text-underline-offset: 2px; }
         </thead>
         <tbody>
           <tr>
-            <td>m4a</td><td>AAC 256k</td>
-            <td class="yes">Embedded</td><td class="yes">Yes</td>
-            <td>The default. Apple-native and plays essentially everywhere.</td>
+            <td>m4a</td><td data-label="Codec">AAC 256k</td>
+            <td data-label="Cover art" class="yes">Embedded</td><td data-label="Apple Music" class="yes">Yes</td>
+            <td data-label="Use it when">The default. Apple-native and plays essentially everywhere.</td>
           </tr>
           <tr>
-            <td>mp3</td><td>LAME 320k</td>
-            <td class="yes">Embedded</td><td class="yes">Yes</td>
-            <td>Something old needs to play it — a car stereo, a hardware player.</td>
+            <td>mp3</td><td data-label="Codec">LAME 320k</td>
+            <td data-label="Cover art" class="yes">Embedded</td><td data-label="Apple Music" class="yes">Yes</td>
+            <td data-label="Use it when">Something old needs to play it — a car stereo, a hardware player.</td>
           </tr>
           <tr>
-            <td>opus</td><td>stream copy</td>
-            <td class="no">Beside the tracks</td><td class="no">No</td>
-            <td>You want the audio untouched and your player handles Ogg.</td>
+            <td>opus</td><td data-label="Codec">stream copy</td>
+            <td data-label="Cover art" class="no">Beside the tracks</td><td data-label="Apple Music" class="no">No</td>
+            <td data-label="Use it when">You want the audio untouched and your player handles Ogg.</td>
           </tr>
         </tbody>
       </table>
@@ -946,11 +1288,11 @@ footer .copyright a { text-decoration: underline; text-underline-offset: 2px; }
     <div class="grid" style="margin-top:16px">
       <div class="card">
         <h3>Prefer cargo?</h3>
-        <p style="font-family:var(--mono);font-size:13px;color:var(--text);margin-top:8px">cargo install --git https://github.com/alexnodeland/sleeve</p>
+        <p class="cmdline">cargo install --git https://github.com/alexnodeland/sleeve</p>
       </div>
       <div class="card">
         <h3>Pin a version</h3>
-        <p style="font-family:var(--mono);font-size:13px;color:var(--text);margin-top:8px">SLEEVE_VERSION=v0.1.1 SLEEVE_PREFIX=~/.local</p>
+        <p class="cmdline">SLEEVE_VERSION=v0.1.1 SLEEVE_PREFIX=~/.local</p>
       </div>
     </div>
   </div>
@@ -978,14 +1320,33 @@ footer .copyright a { text-decoration: underline; text-underline-offset: 2px; }
 
 <footer>
   <div class="wrap">
-    <span class="mono">sleeve</span>
-    <a href="https://github.com/alexnodeland/sleeve">GitHub</a>
-    <a href="https://github.com/alexnodeland/sleeve/releases">Releases</a>
-    <a href="https://github.com/alexnodeland/sleeve/blob/main/CHANGELOG.md">Changelog</a>
-    <a href="https://github.com/alexnodeland/sleeve/blob/main/CONTRIBUTING.md">Contributing</a>
+    <nav class="links" aria-label="Footer">
+      <span class="brandline">
+        <svg class="mark" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true">
+          <defs>
+            <linearGradient id="lbl-f" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#E8A33D"/><stop offset="1" stop-color="#C2543A"/>
+            </linearGradient>
+          </defs>
+          <rect x="0.5" y="0.5" width="31" height="31" rx="7" fill="#121722" stroke="#2E3A4E"/>
+          <circle cx="16" cy="16" r="11.5" fill="#0C1017" stroke="#39435A"/>
+          <circle cx="16" cy="16" r="8.6" fill="none" stroke="#242D3E"/>
+          <circle cx="16" cy="16" r="6.6" fill="none" stroke="#242D3E"/>
+          <circle cx="16" cy="16" r="4.4" fill="url(#lbl-f)"/>
+          <circle cx="16" cy="16" r="0.9" fill="#121722"/>
+        </svg>
+        sleeve
+      </span>
+      <a href="https://github.com/alexnodeland/sleeve">GitHub</a>
+      <a href="https://github.com/alexnodeland/sleeve/releases">Releases</a>
+      <a href="https://github.com/alexnodeland/sleeve/blob/main/CHANGELOG.md">Changelog</a>
+      <a href="https://github.com/alexnodeland/sleeve/blob/main/CONTRIBUTING.md">Contributing</a>
+    </nav>
     <span class="spacer"></span>
-    <span class="mono">MIT or Apache-2.0</span>
-    <span class="mono copyright">&copy; 2026 <a href="https://alexnodeland.com">Alex Nodeland</a></span>
+    <div class="meta">
+      <span>MIT or Apache-2.0</span>
+      <span class="copyright">&copy; 2026 <a href="https://alexnodeland.com">Alex Nodeland</a></span>
+    </div>
   </div>
 </footer>
 
