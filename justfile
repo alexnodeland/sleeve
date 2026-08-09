@@ -54,6 +54,23 @@ doc:
 deny:
     cargo deny check
 
+# The MSRV promised by `rust-version` in Cargo.toml. Moving it means moving it
+# in three places: here, Cargo.toml, and the msrv job in ci.yml.
+MSRV := "1.85"
+
+# Compile under the oldest supported Rust.
+#
+# RUSTC is pinned to the toolchain's own binary on purpose. If rust is also
+# installed via Homebrew, plain `rustup run {{MSRV}} cargo check` will happily
+# invoke the Homebrew rustc from PATH instead — the check then passes against
+# current stable while reporting the pinned version, which is worse than not
+# running it at all. That exact trap let a let-chain (unstable before 1.88)
+# reach CI.
+msrv:
+    rustup toolchain install {{MSRV}} --profile minimal
+    RUSTC="$(rustup run {{MSRV}} rustc --print sysroot)/bin/rustc" \
+      rustup run {{MSRV}} cargo check --all-targets
+
 # Run against a real video, writing to ./scratch (gitignored).
 #
 # NOT part of `just ci` — it needs the network and the two external tools.
@@ -64,5 +81,5 @@ smoke:
     cargo run -- --dry-run --dest ./scratch "{{URL}}"
 
 # Everything CI runs, in CI order
-ci: fmt-check clippy test deny doc
+ci: fmt-check clippy test deny doc msrv
     @echo "ci suite green"

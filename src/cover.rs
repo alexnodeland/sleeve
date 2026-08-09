@@ -84,10 +84,9 @@ pub fn parse_cropdetect(stderr: &str) -> Option<CropBox> {
             continue;
         }
         let parsed: Option<Vec<u32>> = nums.iter().map(|n| n.trim().parse().ok()).collect();
-        if let Some(v) = parsed
-            && v[0] > 0
-            && v[1] > 0
-        {
+        // `.filter` rather than a let-chain: let-chains are unstable before
+        // Rust 1.88 and this crate's MSRV is 1.85.
+        if let Some(v) = parsed.filter(|v| v[0] > 0 && v[1] > 0) {
             found = Some(CropBox {
                 w: v[0],
                 h: v[1],

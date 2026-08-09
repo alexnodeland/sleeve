@@ -108,10 +108,10 @@ pub fn validate_chapters(chapters: &[Chapter]) -> Result<()> {
                 ch.duration()
             );
         }
-        if let Some(prev) = chapters.get(i.wrapping_sub(1))
-            && i > 0
-            && ch.start_time < prev.start_time
-        {
+        // Indexing rather than a let-chain: let-chains are unstable before
+        // Rust 1.88 and this crate's MSRV is 1.85. `i > 0` already proves the
+        // index is in range.
+        if i > 0 && ch.start_time < chapters[i - 1].start_time {
             bail!(
                 "chapter {} ({:?}) starts before the one before it",
                 i + 1,
