@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 330" width="1000" height="330" role="img" aria-label="Pipeline: read chapters, download audio once, build cover art, cut and tag each track">
+  <title>sleeve pipeline</title>
+
+  <defs>
+    <linearGradient id="pcard" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1B2230"/>
+      <stop offset="1" stop-color="#121722"/>
+    </linearGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#4A5A75"/>
+    </marker>
+  </defs>
+
+  <rect width="1000" height="330" rx="16" fill="url(#pcard)"/>
+  <rect x="0.5" y="0.5" width="999" height="329" rx="16" fill="none" stroke="#2E3A4E"/>
+
+  <g font-family="ui-sans-serif, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+
+    <!-- ============ 1. probe ============ -->
+    <g>
+      <rect x="40" y="70" width="188" height="150" rx="12" fill="#19212F" stroke="#334056"/>
+      <text x="134" y="102" text-anchor="middle" font-size="12" font-weight="600" fill="#3D9A8B" letter-spacing="1.2">STEP 1</text>
+      <!-- timeline with chapter divisions -->
+      <rect x="68" y="120" width="132" height="26" rx="5" fill="#0F1520" stroke="#2C3849"/>
+      <rect x="68" y="120" width="34" height="26" rx="5" fill="#3D9A8B" opacity="0.85"/>
+      <rect x="106" y="120" width="28" height="26" fill="#E8A33D" opacity="0.85"/>
+      <rect x="138" y="120" width="24" height="26" fill="#C2543A" opacity="0.85"/>
+      <rect x="166" y="120" width="34" height="26" rx="5" fill="#7C6CC4" opacity="0.85"/>
+      <text x="134" y="176" text-anchor="middle" font-size="16" font-weight="600" fill="#E9EEF6">read chapters</text>
+      <text x="134" y="197" text-anchor="middle" font-size="12.5" fill="#8A99B2">the track listing</text>
+    </g>
+
+    <!-- ============ 2. download ============ -->
+    <g>
+      <rect x="268" y="70" width="188" height="150" rx="12" fill="#19212F" stroke="#334056"/>
+      <text x="362" y="102" text-anchor="middle" font-size="12" font-weight="600" fill="#3D9A8B" letter-spacing="1.2">STEP 2</text>
+      <g stroke="#E8A33D" stroke-width="2.5" fill="none" stroke-linecap="round">
+        <path d="M362 116 L362 146"/>
+        <path d="M351 136 L362 147 L373 136"/>
+        <path d="M344 154 L380 154"/>
+      </g>
+      <text x="362" y="176" text-anchor="middle" font-size="16" font-weight="600" fill="#E9EEF6">download once</text>
+      <text x="362" y="197" text-anchor="middle" font-size="12.5" fill="#8A99B2">best audio, untouched</text>
+    </g>
+
+    <!-- ============ 3. cover ============ -->
+    <g>
+      <rect x="496" y="70" width="188" height="150" rx="12" fill="#19212F" stroke="#334056"/>
+      <text x="590" y="102" text-anchor="middle" font-size="12" font-weight="600" fill="#3D9A8B" letter-spacing="1.2">STEP 3</text>
+      <!-- 16:9 shrinking into a square -->
+      <rect x="552" y="120" width="76" height="34" rx="4" fill="#0F1520" stroke="#3A4762"/>
+      <rect x="561" y="120" width="58" height="34" fill="#26324A"/>
+      <rect x="572" y="112" width="36" height="50" rx="4" fill="none" stroke="#E8A33D" stroke-width="2" stroke-dasharray="4 3">
+        <animate attributeName="stroke-dashoffset" values="0;-14" dur="1.4s" repeatCount="indefinite"/>
+      </rect>
+      <text x="590" y="176" text-anchor="middle" font-size="16" font-weight="600" fill="#E9EEF6">square the art</text>
+      <text x="590" y="197" text-anchor="middle" font-size="12.5" fill="#8A99B2">detect bars, then pad</text>
+    </g>
+
+    <!-- ============ 4. cut ============ -->
+    <g>
+      <rect x="724" y="70" width="236" height="150" rx="12" fill="#19212F" stroke="#334056"/>
+      <text x="842" y="102" text-anchor="middle" font-size="12" font-weight="600" fill="#3D9A8B" letter-spacing="1.2">STEP 4</text>
+      <g>
+        <rect x="770" y="116" width="40" height="40" rx="5" fill="#26324A" stroke="#3A4762"/>
+        <circle cx="790" cy="136" r="11" fill="none" stroke="#E8A33D" stroke-width="2"/>
+        <circle cx="790" cy="136" r="2.6" fill="#E8A33D"/>
+        <rect x="820" y="120" width="86" height="6" rx="3" fill="#4E5F7C"/>
+        <rect x="820" y="133" width="64" height="6" rx="3" fill="#3A4762"/>
+        <rect x="820" y="146" width="74" height="6" rx="3" fill="#3A4762"/>
+      </g>
+      <text x="842" y="176" text-anchor="middle" font-size="16" font-weight="600" fill="#E9EEF6">cut · tag · embed</text>
+      <text x="842" y="197" text-anchor="middle" font-size="12.5" fill="#8A99B2">one file per chapter</text>
+    </g>
+
+    <!-- ============ connectors ============ -->
+    <g stroke="#4A5A75" stroke-width="2" marker-end="url(#arrow)">
+      <path d="M232 145 L262 145"/>
+      <path d="M460 145 L490 145"/>
+      <path d="M688 145 L718 145"/>
+    </g>
+    <!-- a pulse travelling the whole chain -->
+    <circle r="4" fill="#3D9A8B">
+      <animateMotion dur="4.5s" repeatCount="indefinite"
+        path="M232 145 L262 145 M460 145 L490 145 M688 145 L718 145"/>
+      <animate attributeName="opacity" values="0;1;1;0" dur="4.5s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- ============ footer note ============ -->
+    <g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12.5">
+      <rect x="40" y="252" width="920" height="44" rx="8" fill="#141A26" stroke="#283345"/>
+      <text x="64" y="279" fill="#8A99B2" xml:space="preserve"><tspan fill="#3D9A8B">yt-dlp</tspan><tspan fill="#5B6A82">&#160;reads and fetches&#160;&#160;·&#160;&#160;</tspan><tspan fill="#E8A33D">ffmpeg</tspan><tspan fill="#5B6A82">&#160;cuts, encodes and tags&#160;&#160;·&#160;&#160;every track is one encode from the source</tspan></text>
+    </g>
+  </g>
+</svg>

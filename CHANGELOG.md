@@ -5,6 +5,23 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- `install.sh`, so the tool can be installed with a single `curl` line. It
+  detects the platform, verifies the published SHA-256 before installing, and
+  falls back to `~/.local/bin` rather than silently escalating to `sudo`.
+- Illustrated README: hero, pipeline diagram, and a diagram of how cover art is
+  squared.
+
+### Fixed
+
+- Replaced two let-chains, which are unstable before Rust 1.88 and so broke the
+  build on the declared 1.85 MSRV.
+- `just msrv` now exists and runs as part of `just ci`. The local gate did not
+  mirror the CI gate, which is how the above reached CI in the first place.
+
 ## [0.1.0] - 2026-08-08
 
 First release.

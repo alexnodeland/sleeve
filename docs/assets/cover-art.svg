@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 340" width="1000" height="340" role="img" aria-label="Cover art: bars in the thumbnail are detected and cropped, then the image is padded to square rather than cropped to square">
+  <title>How sleeve squares the cover art</title>
+
+  <defs>
+    <linearGradient id="ccard" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1B2230"/>
+      <stop offset="1" stop-color="#121722"/>
+    </linearGradient>
+    <linearGradient id="art" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#C2543A"/>
+      <stop offset="0.5" stop-color="#7C6CC4"/>
+      <stop offset="1" stop-color="#3D9A8B"/>
+    </linearGradient>
+    <marker id="carrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#4A5A75"/>
+    </marker>
+  </defs>
+
+  <rect width="1000" height="340" rx="16" fill="url(#ccard)"/>
+  <rect x="0.5" y="0.5" width="999" height="339" rx="16" fill="none" stroke="#2E3A4E"/>
+
+  <g font-family="ui-sans-serif, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+
+    <!-- ============ A: as served ============ -->
+    <g>
+      <!-- full 16:9 frame -->
+      <rect x="56" y="86" width="240" height="135" rx="4" fill="#0B0E14"/>
+      <!-- the actual picture, pillarboxed inside it -->
+      <rect x="86" y="86" width="180" height="135" fill="url(#art)" opacity="0.9"/>
+      <rect x="56.5" y="86.5" width="239" height="134" rx="4" fill="none" stroke="#3A4762"/>
+      <!-- bar callouts -->
+      <rect x="56" y="86" width="30" height="135" fill="#C2543A" opacity="0.18"/>
+      <rect x="266" y="86" width="30" height="135" fill="#C2543A" opacity="0.18"/>
+      <text x="176" y="252" text-anchor="middle" font-size="15" font-weight="600" fill="#E9EEF6">as served</text>
+      <text x="176" y="273" text-anchor="middle" font-size="12.5" fill="#8A99B2">bars baked into the frame</text>
+    </g>
+
+    <!-- ============ B: detected ============ -->
+    <g>
+      <rect x="380" y="86" width="240" height="135" rx="4" fill="#0B0E14"/>
+      <rect x="410" y="86" width="180" height="135" fill="url(#art)" opacity="0.9"/>
+      <rect x="380.5" y="86.5" width="239" height="134" rx="4" fill="none" stroke="#3A4762"/>
+      <!-- the detected content box -->
+      <rect x="410" y="86" width="180" height="135" fill="none" stroke="#E8A33D" stroke-width="2.5" stroke-dasharray="6 4">
+        <animate attributeName="stroke-dashoffset" values="0;-20" dur="1.6s" repeatCount="indefinite"/>
+      </rect>
+      <text x="500" y="252" text-anchor="middle" font-size="15" font-weight="600" fill="#E9EEF6">detected</text>
+      <text x="500" y="273" text-anchor="middle" font-size="12.5" fill="#8A99B2">cropdetect finds the picture</text>
+    </g>
+
+    <!-- ============ C: squared ============ -->
+    <g>
+      <!-- square canvas: the picture keeps its width, gains bands -->
+      <rect x="716" y="63" width="180" height="180" rx="4" fill="#0B0E14"/>
+      <rect x="716" y="86" width="180" height="135" fill="url(#art)" opacity="0.9"/>
+      <rect x="716.5" y="63.5" width="179" height="179" rx="4" fill="none" stroke="#44536D"/>
+      <!-- pad bands -->
+      <g fill="#3D9A8B" opacity="0.16">
+        <rect x="716" y="63" width="180" height="23"/>
+        <rect x="716" y="221" width="180" height="22"/>
+      </g>
+      <text x="806" y="252" text-anchor="middle" font-size="15" font-weight="600" fill="#E9EEF6">squared</text>
+      <text x="806" y="273" text-anchor="middle" font-size="12.5" fill="#8A99B2">padded, never cropped</text>
+    </g>
+
+    <!-- ============ connectors ============ -->
+    <g stroke="#4A5A75" stroke-width="2" marker-end="url(#carrow)">
+      <path d="M312 153 L364 153"/>
+      <path d="M636 153 L700 153"/>
+    </g>
+
+    <!-- ============ legend ============ -->
+    <g font-size="12.5">
+      <rect x="56" y="296" width="840" height="0" fill="none"/>
+      <rect x="360" y="292" width="12" height="12" rx="2" fill="#C2543A" opacity="0.45"/>
+      <text x="380" y="302" fill="#8A99B2">bars removed</text>
+      <rect x="500" y="292" width="12" height="12" rx="2" fill="#3D9A8B" opacity="0.45"/>
+      <text x="520" y="302" fill="#8A99B2">padding added</text>
+    </g>
+  </g>
+</svg>

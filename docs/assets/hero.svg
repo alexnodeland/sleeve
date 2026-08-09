@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 300" width="1000" height="300" role="img" aria-label="sleeve — one long video becomes an album">
+  <title>sleeve</title>
+
+  <defs>
+    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1B2230"/>
+      <stop offset="1" stop-color="#121722"/>
+    </linearGradient>
+    <linearGradient id="jacket" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2A3446"/>
+      <stop offset="1" stop-color="#1D2534"/>
+    </linearGradient>
+    <linearGradient id="label" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#E8A33D"/>
+      <stop offset="1" stop-color="#C2543A"/>
+    </linearGradient>
+    <clipPath id="jacketClip">
+      <rect x="70" y="62" width="176" height="176" rx="8"/>
+    </clipPath>
+  </defs>
+
+  <!-- Dark card: keeps contrast identical in GitHub's light and dark themes. -->
+  <rect width="1000" height="300" rx="16" fill="url(#card)"/>
+  <rect x="0.5" y="0.5" width="999" height="299" rx="16" fill="none" stroke="#2E3A4E"/>
+
+  <!-- The record, sliding out of the jacket and turning. -->
+  <g>
+    <animateTransform attributeName="transform" type="translate"
+      values="-46 0; 0 0; 0 0; -46 0" keyTimes="0; 0.28; 0.72; 1"
+      dur="7s" repeatCount="indefinite" calcMode="spline"
+      keySplines="0.4 0 0.2 1; 0 0 1 1; 0.4 0 0.2 1"/>
+    <g>
+      <animateTransform attributeName="transform" type="rotate"
+        from="0 268 150" to="360 268 150" dur="9s" repeatCount="indefinite"/>
+      <circle cx="268" cy="150" r="84" fill="#0C1017"/>
+      <circle cx="268" cy="150" r="84" fill="none" stroke="#39435A" stroke-width="1"/>
+      <circle cx="268" cy="150" r="72" fill="none" stroke="#242D3E" stroke-width="1"/>
+      <circle cx="268" cy="150" r="63" fill="none" stroke="#242D3E" stroke-width="1"/>
+      <circle cx="268" cy="150" r="54" fill="none" stroke="#242D3E" stroke-width="1"/>
+      <circle cx="268" cy="150" r="45" fill="none" stroke="#242D3E" stroke-width="1"/>
+      <circle cx="268" cy="150" r="30" fill="url(#label)"/>
+      <!-- Off-centre mark, so the rotation is actually visible. -->
+      <circle cx="268" cy="132" r="3.2" fill="#12161F" opacity="0.55"/>
+      <circle cx="268" cy="150" r="4" fill="#121722"/>
+    </g>
+  </g>
+
+  <!-- The jacket. -->
+  <g clip-path="url(#jacketClip)">
+    <rect x="70" y="62" width="176" height="176" fill="url(#jacket)"/>
+    <rect x="70" y="62" width="176" height="176" fill="none" stroke="#3A465D" stroke-width="2"/>
+    <circle cx="158" cy="150" r="52" fill="none" stroke="#38445A" stroke-width="1.5" opacity="0.8"/>
+    <circle cx="158" cy="150" r="34" fill="none" stroke="#38445A" stroke-width="1.5" opacity="0.6"/>
+    <rect x="70" y="196" width="176" height="42" fill="#161D29" opacity="0.75"/>
+    <rect x="86" y="210" width="82" height="5" rx="2.5" fill="#E8A33D" opacity="0.85"/>
+    <rect x="86" y="222" width="52" height="4" rx="2" fill="#5C6B84"/>
+  </g>
+  <rect x="70.5" y="62.5" width="175" height="175" rx="8" fill="none" stroke="#44536D"/>
+
+  <!-- Wordmark. -->
+  <text x="392" y="150" font-family="ui-sans-serif, -apple-system, Segoe UI, Helvetica, Arial, sans-serif"
+        font-size="76" font-weight="700" fill="#F2F5FA" letter-spacing="-1.5">sleeve</text>
+  <text x="396" y="188" font-family="ui-sans-serif, -apple-system, Segoe UI, Helvetica, Arial, sans-serif"
+        font-size="21" fill="#93A1B8">One long video in. A tagged album out.</text>
+
+  <!-- Chapter ticks resolving into tracks. -->
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" fill="#6F7F98">
+    <rect x="396" y="214" width="404" height="8" rx="4" fill="#222C3C"/>
+    <rect x="396" y="214" width="72" height="8" rx="4" fill="#3D9A8B">
+      <animate attributeName="width" values="0; 72; 72" keyTimes="0; 0.3; 1" dur="7s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="476" y="214" width="118" height="8" rx="4" fill="#E8A33D" opacity="0">
+      <animate attributeName="opacity" values="0; 0; 1; 1" keyTimes="0; 0.3; 0.45; 1" dur="7s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="602" y="214" width="94" height="8" rx="4" fill="#C2543A" opacity="0">
+      <animate attributeName="opacity" values="0; 0; 1; 1" keyTimes="0; 0.45; 0.6; 1" dur="7s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="704" y="214" width="96" height="8" rx="4" fill="#7C6CC4" opacity="0">
+      <animate attributeName="opacity" values="0; 0; 1; 1" keyTimes="0; 0.6; 0.75; 1" dur="7s" repeatCount="indefinite"/>
+    </rect>
+    <text x="396" y="248">01</text>
+    <text x="476" y="248">02</text>
+    <text x="602" y="248">03</text>
+    <text x="704" y="248">04</text>
+  </g>
+</svg>
